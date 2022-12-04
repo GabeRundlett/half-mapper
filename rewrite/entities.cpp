@@ -43,7 +43,7 @@ void parse_entities(const std::string &szStr, const std::string &id, const MapEn
                     v.fixHand();
 
                     if (sMapEntry.m_szOffsetTargetName == targetname) {
-                        // Apply std::map offsets from the config, to fix landmark positions.
+                        // Apply map offsets from the config, to fix landmark positions.
                         v.x += sMapEntry.m_fOffsetX;
                         v.y += sMapEntry.m_fOffsetY;
                         v.z += sMapEntry.m_fOffsetZ;

@@ -1,5 +1,5 @@
 /*
- * halfmapper, a renderer for GoldSrc std::maps and chapters.
+ * halfmapper, a renderer for GoldSrc maps and chapters.
  *
  * Copyright(C) 2014  Gonzalo �vila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
@@ -44,7 +44,7 @@
 using namespace tinyxml2;
 
 /**
- * Stores config data for individual std::maps.
+ * Stores config data for individual maps.
  */
 struct MapEntry {
     MapEntry() {
@@ -71,7 +71,7 @@ struct ChapterEntry {
 
     bool m_bRender;                      /** Toggle renderin of this entire chapter. */
     std::string m_szName;                /** Name of this chapter. */
-    std::vector<MapEntry> m_vMapEntries; /** Vector of std::maps in this chapter. */
+    std::vector<MapEntry> m_vMapEntries; /** Vector of maps in this chapter. */
     float m_fOffsetX;                    /** Offset X axis. */
     float m_fOffsetY;                    /** Offset Y axis. */
     float m_fOffsetZ;                    /** Offset Z axis. */
@@ -92,7 +92,7 @@ class ConfigXML {
     XMLError LoadProgramConfig();
 
     /**
-     * Load a std::map config from a given file.
+     * Load a map config from a given file.
      * \param szFilename File to load from.
      */
     XMLError LoadMapConfig(const char *szFilename);
@@ -107,7 +107,7 @@ class ConfigXML {
     bool m_bVsync{true};                    /** Enable or disable Vsync. */
     std::vector<std::string> m_szGamePaths; /** Locations of the game files. */
     // Map config.
-    std::vector<ChapterEntry> m_vChapterEntries; /** Vector of chapters, containing std::maps. */
+    std::vector<ChapterEntry> m_vChapterEntries; /** Vector of chapters, containing maps. */
     std::vector<std::string> m_vWads;            /** WAD files to load. */
 
   private:
@@ -115,7 +115,7 @@ class ConfigXML {
     XMLError WriteDefaultProgramConfig();
 
     XMLDocument m_xmlProgramConfig; /** Store the tinyxml2 object for the user config. */
-    XMLDocument m_xmlMapConfig;     /** Store the tinyxml2 object for the std::map config. */
+    XMLDocument m_xmlMapConfig;     /** Store the tinyxml2 object for the map config. */
 
 }; // end ConfigXML
 

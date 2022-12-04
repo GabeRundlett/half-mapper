@@ -1,24 +1,31 @@
 <mapconfig>
     <wads>
+        <!-- <wad>cached</wad> -->
+        <!-- <wad>decals</wad> -->
+        <!-- <wad>fonts</wad> -->
+        <!-- <wad>gfx</wad> -->
         <wad>halflife</wad>
         <wad>liquids</wad>
+        <!-- <wad>spraypaint</wad> -->
+        <!-- <wad>tempdecal</wad> -->
+        <!-- <wad>xeno</wad> -->
     </wads>
 
-    <chapter name="Black Mesa Inbound" render="0">
-        <map name="c0a0" />
-        <map name="c0a0a" />
-        <map name="c0a0b" />
-        <map name="c0a0c" />
-        <map name="c0a0d" />
-        <map name="c0a0e" />
+    <chapter name="Black Mesa Inbound" render="1">
+        <map name="c0a0"  render="1" />
+        <map name="c0a0a" render="1" />
+        <map name="c0a0b" render="0" />
+        <map name="c0a0c" render="1" />
+        <map name="c0a0d" render="0" />
+        <map name="c0a0e" render="1" />
     </chapter>
 
-    <chapter name="Anomalous Materials" render="0">
-        <map name="c1a0" render="1" />
+    <chapter name="Anomalous Materials" render="1">
+        <map name="c1a0"  render="1" />
         <map name="c1a0d" render="1" />
         <map name="c1a0a" render="1" />
         <map name="c1a0b" render="1" />
-        <map name="c1a0e" render="1" />
+        <map name="c1a0e" render="0" />
     </chapter>
 
     <chapter name="Unforseen Concequences" render="1">
@@ -34,20 +41,20 @@
         <map name="c1a1d" render="1"/>
     </chapter>
 
-    <chapter name="Office Complex" render="0">
-        <map name="c1a2" />
-        <map name="c1a2a" />
-        <map name="c1a2b" />
-        <map name="c1a2c" />
-        <map name="c1a2d" />
+    <chapter name="Office Complex" render="1">
+        <map name="c1a2" render="1"/>
+        <map name="c1a2a" render="1"/>
+        <map name="c1a2b" render="1"/>
+        <map name="c1a2c" render="1"/>
+        <map name="c1a2d" render="0"/>
     </chapter>
 
-    <chapter name="We've Got Hostiles" render="0">
-        <map name="c1a3" />
-        <map name="c1a3d" />
-        <map name="c1a3a" />
-        <map name="c1a3b" />
-        <map name="c1a3c" />
+    <chapter name="We've Got Hostiles" render="1">
+        <map name="c1a3" render="0"/>
+        <map name="c1a3d" render="0"/>
+        <map name="c1a3a" render="1"/>
+        <map name="c1a3b" render="0"/>
+        <map name="c1a3c" render="0"/>
     </chapter>
 
     <chapter name="Blast Pit" render="0">

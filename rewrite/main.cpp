@@ -85,7 +85,9 @@ struct App : BaseApp<App> {
             .enable_depth_test = true,
             .enable_depth_write = true,
         },
-        .raster = {},
+        .raster = {
+            .face_culling = daxa::FaceCullFlagBits::BACK_BIT,
+        },
         .push_constant_size = sizeof(DrawPush),
         .debug_name = APPNAME_PREFIX("draw_raster_pipeline"),
     }).value();

@@ -11,8 +11,8 @@
 #include <numbers>
 
 struct Camera3D {
-    f32 fov = 98.6f, aspect = 1.0f;
-    f32 near_clip = 1.0f, far_clip = 10000.0f;
+    f32 fov = 98.6f / 2.0f, aspect = 1.0f;
+    f32 near_clip = 1.0f, far_clip = 100000.0f;
     glm::mat4 proj_mat{};
     glm::mat4 vtrn_mat{};
     glm::mat4 vrot_mat{};
@@ -57,8 +57,8 @@ struct Player3D {
     Camera3D camera{};
     input::Keybinds keybinds = input::DEFAULT_KEYBINDS;
     f32vec3 pos{0, 0, 0}, vel{}, rot{};
-    f32 speed = 32.0f, mouse_sens = 0.1f;
-    f32 sprint_speed = 8.0f;
+    f32 speed = 256.0f, mouse_sens = 0.1f;
+    f32 sprint_speed = 16.0f;
     f32 sin_rot_x = 0, cos_rot_x = 1;
 
     struct MoveFlags {

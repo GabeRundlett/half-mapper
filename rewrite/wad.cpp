@@ -46,7 +46,7 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
 
             n.image_id = device.create_image({
                 .format = daxa::Format::R8G8B8A8_SRGB,
-                .size = {bmt.nWidth, bmt.nHeight, 1},
+                .size = {std::max(bmt.nWidth, 1u), std::max(bmt.nHeight, 1u), 1},
                 .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
                 .debug_name = "image",
             });
@@ -82,15 +82,13 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
                     }
                 }
 
-                if (mip == 0)
+                if (mip == 0 && n.w * n.h > 0)
                     n.load(device, dataUp);
             }
 
             textures[bmt.szName] = n;
         }
     }
-
-    device.wait_idle();
 
     delete[] dataDr;
     delete[] dataUp;

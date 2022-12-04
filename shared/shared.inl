@@ -1,5 +1,6 @@
 #pragma once
 
+#define DAXA_ENABLE_IMAGE_OVERLOADS_BASIC 1
 #define DAXA_ENABLE_SHADER_NO_NAMESPACE 1
 #include <daxa/daxa.inl>
 
@@ -19,10 +20,11 @@ DAXA_ENABLE_BUFFER_PTR(GpuInput)
 struct DrawPush {
     daxa_BufferPtr(GpuInput) gpu_input;
     daxa_BufferPtr(DrawVertex) vertices;
-    daxa_ImageViewId image_id0;
-    daxa_ImageViewId image_id1;
+    daxa_Image2Df32 image_id0;
+    daxa_Image2Df32 image_id1;
     daxa_SamplerId image_sampler0;
     daxa_SamplerId image_sampler1;
+    f32vec3 offset;
 };
 
 #define VERTICES(i) deref(daxa_push_constant.vertices[i])

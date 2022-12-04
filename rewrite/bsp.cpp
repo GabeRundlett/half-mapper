@@ -123,7 +123,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         gammaTable[i] = pow(i / 255.0, 1.0 / 3.0) * 255;
     }
 
-    // Light std::map atlas
+    // Light map atlas
     lmapAtlas = new uint8_t[1024 * 1024 * 3];
 
     std::ifstream inBSP;
@@ -456,7 +456,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
 
         std::string const faceTexName = texNames[b.iMiptex];
 
-        // Calculate light std::map uvs
+        // Calculate light map uvs
         int const lmw = ceil(maxUV[i * 2] / 16) - floor(minUV[i * 2] / 16) + 1;
         int const lmh = ceil(maxUV[i * 2 + 1] / 16) - floor(minUV[i * 2 + 1] / 16) + 1;
 
@@ -583,7 +583,7 @@ void BSP::calculateOffset() {
         offset = offsets[mapId];
     } else {
         if (mapId == "c0a0") {
-            // Origin for other std::maps
+            // Origin for other maps
             offsets[mapId] = VERTEX(0, 0, 0);
         } else {
             float ox = 0;
@@ -636,6 +636,7 @@ void BSP::calculateOffset() {
 void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer) {
     // Calculate map offset based on landmarks
     calculateOffset();
+    f32vec3 full_offset{offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z};
 
     int i = 0;
     for (auto it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
@@ -649,6 +650,7 @@ void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::Buffer
                 .image_id1 = lmap_image_id.default_view(),
                 .image_sampler0 = image_sampler,
                 .image_sampler1 = image_sampler,
+                .offset = full_offset,
             });
             auto vert_n = static_cast<u32>((*it).second.triangles.size());
             cmd_list.draw({.vertex_count = vert_n});

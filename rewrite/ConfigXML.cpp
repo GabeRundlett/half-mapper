@@ -1,5 +1,5 @@
 /*
- * halfmapper, a renderer for GoldSrc std::maps and chapters.
+ * halfmapper, a renderer for GoldSrc maps and chapters.
  *
  * Copyright(C) 2014  Gonzalo �vila "gzalo" Alterach
  * Copyright(C) 2015  Anthony "birkett" Birkett
@@ -107,14 +107,14 @@ auto ConfigXML::LoadProgramConfig() -> XMLError {
 } // end ConfigXML::LoadProgramConfig()
 
 /**
- * Load the std::map configuration from a given file name.
+ * Load the map configuration from a given file name.
  * \param szFilename File to load from.
  */
 auto ConfigXML::LoadMapConfig(const char *szFilename) -> XMLError {
     XMLError const eRetCode = this->m_xmlMapConfig.LoadFile(szFilename);
 
     if (eRetCode != XML_SUCCESS) {
-        std::cout << "Error loading std::map config. Code " << eRetCode << std::endl;
+        std::cout << "Error loading map config. Code " << eRetCode << std::endl;
         return eRetCode;
     }
 
@@ -192,7 +192,7 @@ auto ConfigXML::LoadMapConfig(const char *szFilename) -> XMLError {
 
             sChapterEntry.m_vMapEntries.push_back(sMapEntry);
 
-            map = map->NextSiblingElement("std::map");
+            map = map->NextSiblingElement("map");
         }
 
         chapter = chapter->NextSiblingElement("chapter");
