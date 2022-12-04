@@ -11,7 +11,7 @@
 #include <numbers>
 
 struct Camera3D {
-    f32 fov = 98.6f / 2.0f, aspect = 1.0f;
+    f32 fov = 98.6f, aspect = 1.0f;
     f32 near_clip = 1.0f, far_clip = 100000.0f;
     glm::mat4 proj_mat{};
     glm::mat4 vtrn_mat{};
