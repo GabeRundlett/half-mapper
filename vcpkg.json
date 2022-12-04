@@ -2,8 +2,31 @@
   "name": "half-mapper",
   "version": "0.1.0",
   "dependencies": [
+    {
+      "name": "daxa",
+      "features": [
+        "glslang",
+        "utils"
+      ]
+    },
+    "glfw3",
+    "glm",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "docking-experimental"
+      ]
+    },
     "sdl2",
     "tinyxml2",
     "glew"
+  ],
+  "builtin-baseline": "163fe7bd3d67c41200617caaa245b5ba2ba854e6",
+  "overrides": [
+    {
+      "name": "glfw3",
+      "version-string": "custom"
+    }
   ]
 }
