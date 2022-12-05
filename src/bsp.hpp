@@ -93,10 +93,8 @@ struct VECFINAL {
     }
 };
 struct TEXTURE {
-    unsigned int texId;
-    int w, h;
-
     daxa::ImageId image_id;
+    int w, h;
 
     void load(daxa::Device &device, uint8_t *data, u32 src_channel_n = 4, u32 dst_channel_n = 4);
 };
@@ -108,8 +106,6 @@ struct LMAP {
 
 struct TEXSTUFF {
     std::vector<VECFINAL> triangles;
-    int texId;
-
     daxa::ImageId image_id;
 };
 
@@ -130,8 +126,6 @@ class BSP {
     void calculateOffset();
 
     unsigned char *lmapAtlas;
-
-    unsigned int lmapTexId{};
 
     std::map<std::string, TEXSTUFF> texturedTris;
     BUFFER *bufObjects;

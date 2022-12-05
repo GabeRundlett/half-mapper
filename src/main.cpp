@@ -10,6 +10,10 @@
 #include "bsp.hpp"
 #include "ConfigXML.hpp"
 
+#if COUNT_DRAWS
+usize draw_count = 0;
+#endif
+
 struct HalfLife {
     ConfigXML *xmlconfig = new ConfigXML();
     std::vector<BSP *> maps;
@@ -17,7 +21,7 @@ struct HalfLife {
 
     HalfLife(daxa::Device &a_device) : device{a_device} {
         xmlconfig->LoadProgramConfig();
-        xmlconfig->LoadMapConfig("halflife.xml");
+        xmlconfig->LoadMapConfig("test.xml");
 
         // Texture loading
         for (size_t i = 0; i < xmlconfig->m_vWads.size(); i++) {
@@ -74,6 +78,8 @@ struct HalfLife {
     }
 };
 
+constexpr usize VERTEX_N = 6;
+
 struct App : BaseApp<App> {
     // clang-format off
     daxa::RasterPipeline draw_raster_pipeline = pipeline_compiler.create_raster_pipeline({
@@ -98,7 +104,7 @@ struct App : BaseApp<App> {
     });
     daxa::TaskBufferId task_gpu_input_buffer;
     daxa::BufferId vertex_buffer = device.create_buffer(daxa::BufferInfo{
-        .size = sizeof(DrawVertex) * 3,
+        .size = sizeof(DrawVertex) * VERTEX_N,
         .debug_name = APPNAME_PREFIX("vertex_buffer"),
     });
     daxa::TaskBufferId task_vertex_buffer;
@@ -135,6 +141,12 @@ struct App : BaseApp<App> {
             ImGui::ShowDemoWindow();
 
             ImGui::Begin("Images");
+
+#if COUNT_DRAWS
+            ImGui::Text("Draw Count: %llu", draw_count);
+            draw_count = 0;
+#endif
+
             u32 i = 0;
             for (auto &[key, tex] : textures) {
                 if ((i % 12) != 0)
@@ -252,21 +264,27 @@ struct App : BaseApp<App> {
                 auto cmd_list = runtime.get_command_list();
                 auto vertex_staging_buffer = device.create_buffer({
                     .memory_flags = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
-                    .size = sizeof(DrawVertex) * 3,
+                    .size = sizeof(DrawVertex) * VERTEX_N,
                     .debug_name = APPNAME_PREFIX("vertex_staging_buffer"),
                 });
                 cmd_list.destroy_buffer_deferred(vertex_staging_buffer);
                 auto buffer_ptr = device.get_host_address_as<DrawVertex>(vertex_staging_buffer);
-                *buffer_ptr = DrawVertex{{-0.5f, +0.5f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}};
+                *buffer_ptr = DrawVertex{{256.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}};
                 ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{+0.5f, +0.5f, 0.0f}, {0.0f, 1.0f}, {0.0f, 1.0f}};
+                *buffer_ptr = DrawVertex{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f}};
                 ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{+0.0f, -0.5f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f}};
+                *buffer_ptr = DrawVertex{{0.0f, 256.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 1.0f}};
+                ++buffer_ptr;
+                *buffer_ptr = DrawVertex{{256.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}};
+                ++buffer_ptr;
+                *buffer_ptr = DrawVertex{{0.0f, 256.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 1.0f}};
+                ++buffer_ptr;
+                *buffer_ptr = DrawVertex{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f}};
                 ++buffer_ptr;
                 cmd_list.copy_buffer_to_buffer({
                     .src_buffer = vertex_staging_buffer,
                     .dst_buffer = vertex_buffer,
-                    .size = sizeof(DrawVertex) * 3,
+                    .size = sizeof(DrawVertex) * VERTEX_N,
                 });
             },
             .debug_name = APPNAME_PREFIX("Upload vertices"),
@@ -285,7 +303,7 @@ struct App : BaseApp<App> {
                     .color_attachments = {{
                         .image_view = swapchain_image.default_view(),
                         .load_op = daxa::AttachmentLoadOp::CLEAR,
-                        .clear_value = std::array<f32, 4>{0.2f, 0.4f, 1.0f, 1.0f},
+                        .clear_value = std::array<f32, 4>{51.0f / 255.0f, 102.0f / 255.0f, 250.0f / 255.0f, 1.0f},
                     }},
                     .depth_attachment = {{
                         .image_view = depth_image.default_view(),
@@ -296,11 +314,19 @@ struct App : BaseApp<App> {
                 });
                 cmd_list.set_pipeline(draw_raster_pipeline);
 
-                // cmd_list.push_constant(DrawPush{
-                //     .gpu_input = this->device.get_device_address(gpu_input_buffer),
-                //     .vertices = this->device.get_device_address(vertex_buffer),
-                // });
-                // cmd_list.draw({.vertex_count = 3});
+                cmd_list.push_constant(DrawPush{
+                    .gpu_input = this->device.get_device_address(gpu_input_buffer),
+                    .vertices = this->device.get_device_address(vertex_buffer),
+                    .image_id0 = 0,
+                    .image_id1 = 0,
+                    .image_sampler0 = 0,
+                    .image_sampler1 = 0,
+                    .offset = f32vec3{0.0f, 0.0f, 0.0f},
+                });
+                cmd_list.draw({.vertex_count = VERTEX_N});
+#if COUNT_DRAWS
+                draw_count++;
+#endif
 
                 halflife.render(cmd_list, gpu_input_buffer);
 

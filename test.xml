@@ -1,0 +1,206 @@
+<mapconfig>
+    <wads>
+        <wad>halflife</wad>
+        <wad>liquids</wad>
+        <!-- <wad>decals</wad> -->
+        <!-- <wad>fonts</wad> -->
+        <!-- <wad>spraypaint</wad> -->
+        <!-- <wad>tempdecal</wad> -->
+        <!-- <wad>xeno</wad> -->
+
+        <!-- No clue what's in these, but they're huge -->
+        <!-- <wad>cached</wad> -->
+        <!-- <wad>gfx</wad> -->
+
+        <!-- Counter Strike -->
+        <!-- <wad>ajawad</wad> -->
+        <!-- <wad>chateau</wad> -->
+        <!-- <wad>cstraining</wad> -->
+        <wad>cstrike</wad>
+        <!-- <wad>cs_747</wad> -->
+        <!-- <wad>cs_assault</wad> -->
+        <!-- <wad>cs_bdog</wad> -->
+        <!-- <wad>cs_cbble</wad> -->
+        <!-- <wad>cs_dust</wad> -->
+        <!-- <wad>cs_havana</wad> -->
+        <!-- <wad>cs_office</wad> -->
+        <!-- <wad>decals</wad> -->
+        <!-- <wad>de_airstrip</wad> -->
+        <!-- <wad>de_aztec</wad> -->
+        <wad>de_piranesi</wad>
+        <!-- <wad>de_storm</wad> -->
+        <!-- <wad>de_vertigo</wad> -->
+        <!-- <wad>itsitaly</wad> -->
+        <!-- <wad>n0th1ng</wad> -->
+        <!-- <wad>prodigy</wad> -->
+        <!-- <wad>torntextures</wad> -->
+        <!-- <wad>tswad</wad> -->
+    </wads>
+
+    <chapter name="Game" render="1">
+        <!-- <map name="c0a0"           render="1"/> -->
+        <!-- <map name="c0a0a"          render="1"/> -->
+        <!-- <map name="c0a0b"          render="1"/> -->
+        <!-- <map name="c0a0c"          render="1"/> -->
+        <!-- <map name="c0a0d"          render="1"/> -->
+        <!-- <map name="c0a0e"          render="1"/> -->
+        <!-- <map name="c1a0"           render="1"/> -->
+        <!-- <map name="c1a0a"          render="1"/> -->
+        <!-- <map name="c1a0b"          render="1"/> -->
+        <!-- <map name="c1a0c"          render="1"/> -->
+        <!-- <map name="c1a0d"          render="1"/> -->
+        <!-- <map name="c1a0e"          render="1"/> -->
+        <!-- <map name="c1a1"           render="1"/> -->
+        <!-- <map name="c1a1a"          render="1"/> -->
+        <!-- <map name="c1a1b"          render="1"/> -->
+        <!-- <map name="c1a1c"          render="1"/> -->
+        <!-- <map name="c1a1d"          render="1"/> -->
+        <!-- <map name="c1a1f"          render="1"/> -->
+        <!-- <map name="c1a2"           render="1"/> -->
+        <!-- <map name="c1a2a"          render="1"/> -->
+        <!-- <map name="c1a2b"          render="1"/> -->
+        <!-- <map name="c1a2c"          render="1"/> -->
+        <!-- <map name="c1a2d"          render="1"/> -->
+        <!-- <map name="c1a3"           render="1"/> -->
+        <!-- <map name="c1a3a"          render="1"/> -->
+        <!-- <map name="c1a3b"          render="1"/> -->
+        <!-- <map name="c1a3c"          render="1"/> -->
+        <!-- <map name="c1a3d"          render="1"/> -->
+        <!-- <map name="c1a4"           render="1"/> -->
+        <!-- <map name="c1a4b"          render="1"/> -->
+        <!-- <map name="c1a4d"          render="1"/> -->
+        <!-- <map name="c1a4e"          render="1"/> -->
+        <!-- <map name="c1a4f"          render="1"/> -->
+        <!-- <map name="c1a4g"          render="1"/> -->
+        <!-- <map name="c1a4i"          render="1"/> -->
+        <!-- <map name="c1a4j"          render="1"/> -->
+        <!-- <map name="c1a4k"          render="1"/> -->
+        <!-- <map name="c2a1"           render="1"/> -->
+        <!-- <map name="c2a1a"          render="1"/> -->
+        <!-- <map name="c2a1b"          render="1"/> -->
+        <!-- <map name="c2a2"           render="1"/> -->
+        <!-- <map name="c2a2a"          render="1"/> -->
+        <!-- <map name="c2a2b1"         render="1"/> -->
+        <!-- <map name="c2a2b2"         render="1"/> -->
+        <!-- <map name="c2a2c"          render="1"/> -->
+
+        <!-- <map name="c2a2d"          render="1"/> -->
+        <!-- <map name="c2a2e"          render="1"/> -->
+        <!-- <map name="c2a2f"          render="1"/> -->
+        <!-- <map name="c2a2g"          render="1"/> -->
+        <!-- <map name="c2a2h"          render="1"/> -->
+        <!-- <map name="c2a3"           render="1"/> -->
+        <!-- <map name="c2a3a"          render="1"/> -->
+        <!-- <map name="c2a3b"          render="1"/> -->
+        <!-- <map name="c2a3c"          render="1"/> -->
+        <!-- <map name="c2a3d"          render="1"/> -->
+        <!-- <map name="c2a3e"          render="1"/> -->
+        <!-- <map name="c2a4"           render="1"/> -->
+        <!-- <map name="c2a4a"          render="1"/> -->
+        <!-- <map name="c2a4b"          render="1"/> -->
+        <!-- <map name="c2a4c"          render="1"/> -->
+        <!-- <map name="c2a4d"          render="1"/> -->
+        <!-- <map name="c2a4e"          render="1"/> -->
+        <!-- <map name="c2a4f"          render="1"/> -->
+        <!-- <map name="c2a4g"          render="1"/> -->
+        <!-- <map name="c2a5"           render="1"/> -->
+        <!-- <map name="c2a5a"          render="1"/> -->
+        <!-- <map name="c2a5b"          render="1"/> -->
+        <!-- <map name="c2a5c"          render="1"/> -->
+        <!-- <map name="c2a5d"          render="1"/> -->
+        <!-- <map name="c2a5e"          render="1"/> -->
+        <!-- <map name="c2a5f"          render="1"/> -->
+        <!-- <map name="c2a5g"          render="1"/> -->
+        <!-- <map name="c2a5w"          render="1"/> -->
+        <!-- <map name="c2a5x"          render="1"/> -->
+        <!-- <map name="c3a1"           render="1"/> -->
+        <!-- <map name="c3a1a"          render="1"/> -->
+        <!-- <map name="c3a1b"          render="1"/> -->
+        <!-- <map name="c3a2"           render="1"/> -->
+        <!-- <map name="c3a2a"          render="1"/> -->
+        <!-- <map name="c3a2b"          render="1"/> -->
+        <!-- <map name="c3a2c"          render="1"/> -->
+        <!-- <map name="c3a2d"          render="1"/> -->
+        <!-- <map name="c3a2e"          render="1"/> -->
+        <!-- <map name="c3a2f"          render="1"/> -->
+
+        <!-- Xen 1 -->
+        <!-- <map name="c4a1"           render="1"/> -->
+
+        <!-- Xen 2 -->
+        <!-- <map name="c4a1a"          render="1"/> -->
+
+        <!-- Xen 3 -->
+        <!-- <map name="c4a1b"          render="1"/> -->
+
+        <!-- Interloper -->
+        <!-- <map name="c4a1c"          render="1"/> -->
+        <!-- <map name="c4a1d"          render="1"/> -->
+        <!-- <map name="c4a1e"          render="1"/> -->
+
+        <!-- Nihilanth teleport -->
+        <!-- <map name="c4a1f"          render="1"/> -->
+
+        <!-- Gonarch -->
+        <!-- <map name="c4a2"           render="1"/> -->
+        <!-- <map name="c4a2a"          render="1"/> -->
+        <!-- <map name="c4a2b"          render="1"/> -->
+
+        <!-- Nihilanth -->
+        <!-- <map name="c4a3"           render="1"/> -->
+
+        <!-- G-Man -->
+        <!-- <map name="c5a1"           render="1"/> -->
+
+        <!-- Training Course -->
+        <!-- <map name="t0a0"           render="1"/> -->
+        <!-- <map name="t0a0a"          render="1"/> -->
+        <!-- <map name="t0a0b"          render="1"/> -->
+        <!-- <map name="t0a0b1"         render="1"/> -->
+        <!-- <map name="t0a0b2"         render="1"/> -->
+        <!-- <map name="t0a0c"          render="1"/> -->
+        <!-- <map name="t0a0d"          render="1"/> -->
+
+        <!-- Custom Maps -->
+        <!-- <map name="boot_camp"      render="1"/> -->
+        <!-- <map name="bounce"         render="1"/> -->
+        <!-- <map name="crossfire"      render="1"/> -->
+        <!-- <map name="datacore"       render="1"/> -->
+        <!-- <map name="frenzy"         render="1"/> -->
+        <!-- <map name="gasworks"       render="1"/> -->
+        <!-- <map name="lambda_bunker"  render="1"/> -->
+        <!-- <map name="rapidcore"      render="1"/> -->
+        <!-- <map name="snark_pit"      render="1"/> -->
+        <!-- <map name="stalkyard"      render="1"/> -->
+        <!-- <map name="subtransit"     render="1"/> -->
+        <!-- <map name="undertow"       render="1"/> -->
+
+        <!-- Counter Strike maps -->
+        <!-- <map name="as_oilrig"      render="1"/> -->
+        <!-- <map name="cs_747"         render="1"/> -->
+        <!-- <map name="cs_assault"     render="1"/> -->
+        <!-- <map name="cs_backalley"   render="1"/> -->
+        <!-- <map name="cs_estate"      render="1"/> -->
+        <!-- <map name="cs_havana"      render="1"/> -->
+        <!-- <map name="cs_italy"       render="1"/> -->
+        <!-- <map name="cs_militia"     render="1"/> -->
+        <!-- <map name="cs_office"      render="1"/> -->
+        <!-- <map name="cs_siege"       render="1"/> -->
+        <!-- <map name="de_airstrip"    render="1"/> -->
+        <!-- <map name="de_aztec"       render="1"/> -->
+        <!-- <map name="de_cbble"       render="1"/> -->
+        <!-- <map name="de_chateau"     render="1"/> -->
+        <!-- <map name="de_dust"        render="1"/> -->
+        <!-- <map name="de_dust2"       render="1"/> -->
+        <!-- <map name="de_inferno"     render="1"/> -->
+        <!-- <map name="de_nuke"        render="1"/> -->
+        <map name="de_piranesi"    render="1"/>
+        <!-- <map name="de_prodigy"     render="1"/> -->
+        <!-- <map name="de_storm"       render="1"/> -->
+        <!-- <map name="de_survivor"    render="1"/> -->
+        <!-- <map name="de_torn"        render="1"/> -->
+        <!-- <map name="de_train"       render="1"/> -->
+        <!-- <map name="de_vertigo"     render="1"/> -->
+
+    </chapter>
+</mapconfig>

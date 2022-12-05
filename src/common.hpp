@@ -16,6 +16,12 @@
 using namespace daxa::types;
 #include "../shared/shared.inl"
 
+#define COUNT_DRAWS 0
+
+#if COUNT_DRAWS
+extern usize draw_count;
+#endif
+
 struct VERTEX {
     float x, y, z;
     void fixHand() {

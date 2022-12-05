@@ -18,12 +18,17 @@ layout(location = 0) out f32vec4 color;
 void main() {
     f32vec2 uv0 = v_col.xy;
     f32vec2 uv1 = v_col.zw;
-    f32vec4 tex0_col = texture(daxa_push_constant.image_id0, daxa_push_constant.image_sampler0, uv0);
-    f32vec4 tex1_col = texture(daxa_push_constant.image_id1, daxa_push_constant.image_sampler1, uv1);
 
-    color = f32vec4(tex0_col.rgb * tex1_col.rgb, 1);
-    // color = f32vec4(tex0_col.rgb, 1);
-    // color = f32vec4(tex1_col.rgb, 1);
+    if (daxa_push_constant.image_sampler0.value == 0) {
+        color = f32vec4(uv0, uv1);
+    } else {
+        f32vec4 tex0_col = texture(daxa_push_constant.image_id0, daxa_push_constant.image_sampler0, uv0);
+        f32vec4 tex1_col = texture(daxa_push_constant.image_id1, daxa_push_constant.image_sampler1, uv1);
+
+        color = f32vec4(tex0_col.rgb * tex1_col.rgb, 1);
+        // color = f32vec4(tex0_col.rgb, 1);
+        // color = f32vec4(tex1_col.rgb, 1);
+    }
 }
 
 #endif

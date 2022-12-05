@@ -327,7 +327,6 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
 
             } else {
                 TEXTURE n{};
-                n.texId = 0;
                 n.w = 1;
                 n.h = 1;
                 textures[bmt.szName] = n;
@@ -384,11 +383,16 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
 
         if (lmw > 17 || lmh > 17) {
             lmw = lmh = 1;
+            // continue;
         }
         LMAP l{};
         l.w = lmw;
         l.h = lmh;
-        l.offset = lmap + f.nLightmapOffset;
+        if (f.nLightmapOffset < size) {
+            l.offset = lmap + f.nLightmapOffset;
+        } else {
+            l.offset = nullptr;
+        }
         lmaps.push_back(l);
     }
 
@@ -433,9 +437,15 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
 #define LMXY(_x, _y) (((_x) + ((_y)*lmaps[i].w)) * 3)
         for (int y = 0; y < lmaps[i].h; y++) {
             for (int x = 0; x < lmaps[i].w; x++) {
-                lmapAtlas[ATXY(finalX + x, finalY + y) + 0] = gammaTable[lmaps[i].offset[LMXY(x, y) + 0]];
-                lmapAtlas[ATXY(finalX + x, finalY + y) + 1] = gammaTable[lmaps[i].offset[LMXY(x, y) + 1]];
-                lmapAtlas[ATXY(finalX + x, finalY + y) + 2] = gammaTable[lmaps[i].offset[LMXY(x, y) + 2]];
+                if (lmaps[i].offset) {
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 0] = gammaTable[lmaps[i].offset[LMXY(x, y) + 0]];
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 1] = gammaTable[lmaps[i].offset[LMXY(x, y) + 1]];
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 2] = gammaTable[lmaps[i].offset[LMXY(x, y) + 2]];
+                } else {
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 0] = 200;
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 1] = 50;
+                    lmapAtlas[ATXY(finalX + x, finalY + y) + 2] = 255;
+                }
             }
         }
     }
@@ -525,7 +535,6 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
             vt->push_back(VECFINAL(v2, c2, c2l));
             vt->push_back(VECFINAL(v3, c3, c3l));
         }
-        texturedTris[faceTexName].texId = textures[faceTexName].texId;
         texturedTris[faceTexName].image_id = textures[faceTexName].image_id;
     }
 
@@ -558,7 +567,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         auto buf_size = static_cast<u32>((*it).second.triangles.size() * sizeof(VECFINAL));
         buf.buffer_id = device.create_buffer({
             .size = buf_size,
-            .debug_name = "gpu_input_buffer",
+            .debug_name = "textured_tri_buffer",
         });
         upload_buffer_data(device, buf.buffer_id, reinterpret_cast<u8 *>((*it).second.triangles.data()), buf_size);
         totalTris += (*it).second.triangles.size();
@@ -654,6 +663,10 @@ void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::Buffer
             });
             auto vert_n = static_cast<u32>((*it).second.triangles.size());
             cmd_list.draw({.vertex_count = vert_n});
+
+#if COUNT_DRAWS
+            draw_count++;
+#endif
         }
     }
 }
