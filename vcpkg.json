@@ -20,6 +20,7 @@
     },
     "sdl2",
     "tinyxml2",
+    "nlohmann-json",
     "glew"
   ],
   "builtin-baseline": "163fe7bd3d67c41200617caaa245b5ba2ba854e6",

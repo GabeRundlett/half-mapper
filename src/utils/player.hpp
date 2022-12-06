@@ -57,8 +57,8 @@ struct Player3D {
     Camera3D camera{};
     input::Keybinds keybinds = input::DEFAULT_KEYBINDS;
     f32vec3 pos{0, 0, 0}, vel{}, rot{};
-    f32 speed = 256.0f, mouse_sens = 0.1f;
-    f32 sprint_speed = 16.0f;
+    f32 speed = 250.0f, mouse_sens = 0.1f;
+    f32 sprint_speed = 25.0f;
     f32 sin_rot_x = 0, cos_rot_x = 1;
 
     struct MoveFlags {

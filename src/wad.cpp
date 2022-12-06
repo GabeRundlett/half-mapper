@@ -47,6 +47,7 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
             n.image_id = device.create_image({
                 .format = daxa::Format::R8G8B8A8_SRGB,
                 .size = {std::max(bmt.nWidth, 1u), std::max(bmt.nHeight, 1u), 1},
+                .mip_level_count = 4,
                 .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
                 .debug_name = "image",
             });
@@ -61,7 +62,7 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
                 inWAD.read((char *)dataDr, bmt.nWidth * bmt.nHeight / dimensionsSquared[mip]);
 
                 if (mip == 3) {
-                    // Read the pallete (comes after last mipmap)
+                    // Read the palette (comes after last mipmap)
                     uint16_t dummy = 0;
                     inWAD.read((char *)&dummy, 2);
                     inWAD.read((char *)dataPal, 256 * 3);

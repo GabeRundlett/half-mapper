@@ -18,7 +18,7 @@ using namespace daxa::types;
 
 using Clock = std::chrono::high_resolution_clock;
 
-#define APPNAME "Half Mapper"
+#define APPNAME "Half-Life Map Merger"
 #define APPNAME_PREFIX(x) ("[" APPNAME "] " x)
 
 template <typename T>

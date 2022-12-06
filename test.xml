@@ -23,11 +23,11 @@
         <!-- <wad>cs_cbble</wad> -->
         <!-- <wad>cs_dust</wad> -->
         <!-- <wad>cs_havana</wad> -->
-        <!-- <wad>cs_office</wad> -->
+        <wad>cs_office</wad>
         <!-- <wad>decals</wad> -->
         <!-- <wad>de_airstrip</wad> -->
         <!-- <wad>de_aztec</wad> -->
-        <wad>de_piranesi</wad>
+        <!-- <wad>de_piranesi</wad> -->
         <!-- <wad>de_storm</wad> -->
         <!-- <wad>de_vertigo</wad> -->
         <!-- <wad>itsitaly</wad> -->
@@ -36,6 +36,58 @@
         <!-- <wad>torntextures</wad> -->
         <!-- <wad>tswad</wad> -->
     </wads>
+
+    <chapter name="Apprehension" render="1">
+        <!-- <map name="c2a3" render="1"/> -->
+        <!-- <map name="c2a3a" render="1"/> -->
+        <!-- <map name="c2a3b" render="1"/> -->
+        <!-- <map name="c2a3c" render="1"/> -->
+        <!-- <map name="c2a3d" render="1"/> -->
+        <!-- <map name="c2a3e" render="1"/> -->
+    </chapter>
+
+    <chapter name="Residue Processing" render="1">
+        <!-- <map name="c2a4"  render="1"/> -->
+        <!-- <map name="c2a4a" render="1"/> -->
+        <!-- <map name="c2a4b" render="1"/> -->
+        <!-- <map name="c2a4c" render="1"/> -->
+    </chapter>
+
+    <chapter name="Questionable Ethics" render="1">
+        <!-- <map name="c2a4d" render="1"/> -->
+        <!-- <map name="c2a4e" render="1"/> -->
+        <!-- <map name="c2a4f" render="1"/> -->
+        <!-- <map name="c2a4g" render="1"/> -->
+    </chapter>
+
+    <chapter name="Surface Tension" render="1">
+        <!-- <map name="c2a5"  render="1"/> -->
+        <!-- <map name="c2a5w" render="1"/> -->
+        <!-- <map name="c2a5x" render="1"/> -->
+        <!-- <map name="c2a5a" render="1"/> -->
+        <!-- <map name="c2a5b" render="1"/> -->
+        <!-- <map name="c2a5c" render="1"/> -->
+        <!-- <map name="c2a5d" render="1"/> -->
+        <!-- <map name="c2a5e" render="1"/> -->
+        <!-- <map name="c2a5f" render="1"/> -->
+        <!-- <map name="c2a5g" render="1"/> -->
+    </chapter>
+
+    <chapter name="Forget About Freeman" render="1">
+        <!-- <map name="c3a1"  render="1"/> -->
+        <!-- <map name="c3a1a" render="1"/> -->
+        <!-- <map name="c3a1b" render="1"/> -->
+    </chapter>
+
+    <chapter name="Lambda Core" render="1">
+        <!-- <map name="c3a2e" render="1"/> -->
+        <!-- <map name="c3a2"  render="1"/> -->
+        <!-- <map name="c3a2a" render="1"/> -->
+        <!-- <map name="c3a2b" render="1"/> -->
+        <!-- <map name="c3a2c" render="1"/> -->
+        <!-- <map name="c3a2d" render="1"/> -->
+        <!-- <map name="c3a2f" render="1"/> -->
+    </chapter>
 
     <chapter name="Game" render="1">
         <!-- <map name="c0a0"           render="1"/> -->
@@ -184,7 +236,7 @@
         <!-- <map name="cs_havana"      render="1"/> -->
         <!-- <map name="cs_italy"       render="1"/> -->
         <!-- <map name="cs_militia"     render="1"/> -->
-        <!-- <map name="cs_office"      render="1"/> -->
+        <map name="cs_office"      render="1"/>
         <!-- <map name="cs_siege"       render="1"/> -->
         <!-- <map name="de_airstrip"    render="1"/> -->
         <!-- <map name="de_aztec"       render="1"/> -->
@@ -194,13 +246,13 @@
         <!-- <map name="de_dust2"       render="1"/> -->
         <!-- <map name="de_inferno"     render="1"/> -->
         <!-- <map name="de_nuke"        render="1"/> -->
-        <map name="de_piranesi"    render="1"/>
+        <!-- <map name="de_piranesi"    render="1"/> -->
         <!-- <map name="de_prodigy"     render="1"/> -->
         <!-- <map name="de_storm"       render="1"/> -->
         <!-- <map name="de_survivor"    render="1"/> -->
         <!-- <map name="de_torn"        render="1"/> -->
         <!-- <map name="de_train"       render="1"/> -->
         <!-- <map name="de_vertigo"     render="1"/> -->
-
     </chapter>
+
 </mapconfig>

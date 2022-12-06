@@ -96,7 +96,7 @@ struct TEXTURE {
     daxa::ImageId image_id;
     int w, h;
 
-    void load(daxa::Device &device, uint8_t *data, u32 src_channel_n = 4, u32 dst_channel_n = 4);
+    void load(daxa::Device &device, uint8_t *data, u32 src_channel_n = 4, u32 dst_channel_n = 4, u32 mip_level_count = 4);
 };
 struct LMAP {
     unsigned char *offset;
@@ -116,12 +116,11 @@ struct BUFFER {
 class BSP {
   public:
     BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, const std::string &filename, const MapEntry &sMapEntry);
-    void render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer);
+    void render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer, daxa::SamplerId image_sampler0, daxa::SamplerId image_sampler1);
     int totalTris;
     void SetChapterOffset(const float x, const float y, const float z);
 
     daxa::ImageId lmap_image_id;
-    daxa::SamplerId image_sampler;
 
     void calculateOffset();
 
@@ -130,9 +129,14 @@ class BSP {
     std::map<std::string, TEXSTUFF> texturedTris;
     BUFFER *bufObjects;
     std::string mapId;
+    std::string parent_mapId;
     VERTEX offset;
 
     VERTEX ConfigOffsetChapter;
+
+    f32vec3 user_offset = {};
+    f32vec3 propagated_user_offset = {};
+    bool should_draw = true;
 };
 
 extern std::map<std::string, TEXTURE> textures;

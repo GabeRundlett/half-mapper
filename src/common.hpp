@@ -13,7 +13,9 @@
 
 #include <daxa/daxa.hpp>
 #include <daxa/utils/task_list.hpp>
+#include <daxa/utils/math_operators.hpp>
 using namespace daxa::types;
+using namespace daxa::math_operators;
 #include "../shared/shared.inl"
 
 #define COUNT_DRAWS 0

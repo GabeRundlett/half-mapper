@@ -17,7 +17,7 @@ static inline auto calcCoords(VERTEX v, VERTEX vs, VERTEX vt, float sShift, floa
     return ret;
 }
 
-void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_channel_n) {
+void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_channel_n, u32 mip_level_count) {
     auto sx = static_cast<u32>(w);
     auto sy = static_cast<u32>(h);
     usize image_size = sx * sy * sizeof(u8) * dst_channel_n;
@@ -49,7 +49,7 @@ void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_ch
         .after_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
         .image_slice = {
             .base_mip_level = 0,
-            .level_count = 1,
+            .level_count = mip_level_count,
             .base_array_layer = 0,
             .layer_count = 1,
         },
@@ -62,19 +62,19 @@ void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_ch
         .image_offset = {0, 0, 0},
         .image_extent = {sx, sy, 1},
     });
-    cmd_list.pipeline_barrier_image_transition({
-        .awaited_pipeline_access = daxa::AccessConsts::TRANSFER_WRITE,
-        .waiting_pipeline_access = daxa::AccessConsts::READ,
-        .before_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
-        .after_layout = daxa::ImageLayout::READ_ONLY_OPTIMAL,
-        .image_slice = {
-            .base_mip_level = 0,
-            .level_count = 1,
-            .base_array_layer = 0,
-            .layer_count = 1,
-        },
-        .image_id = image_id,
-    });
+    // cmd_list.pipeline_barrier_image_transition({
+    //     .awaited_pipeline_access = daxa::AccessConsts::TRANSFER_WRITE,
+    //     .waiting_pipeline_access = daxa::AccessConsts::READ,
+    //     .before_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
+    //     .after_layout = daxa::ImageLayout::READ_ONLY_OPTIMAL,
+    //     .image_slice = {
+    //         .base_mip_level = 0,
+    //         .level_count = 1,
+    //         .base_array_layer = 0,
+    //         .layer_count = 1,
+    //     },
+    //     .image_id = image_id,
+    // });
     cmd_list.complete();
     device.submit_commands({
         .command_lists = {std::move(cmd_list)},
@@ -308,6 +308,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                 n.image_id = device.create_image({
                     .format = daxa::Format::R8G8B8A8_SRGB,
                     .size = {bmt.nWidth, bmt.nHeight, 1},
+                    .mip_level_count = 4,
                     .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
                     .debug_name = "image",
                 });
@@ -555,7 +556,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     lmap_tex.image_id = lmap_image_id;
     lmap_tex.w = 1024;
     lmap_tex.h = 1024;
-    lmap_tex.load(device, lmapAtlas, 3, 4);
+    lmap_tex.load(device, lmapAtlas, 3, 4, 1);
     delete[] lmapAtlas;
 
     bufObjects = new BUFFER[texturedTris.size()];
@@ -574,17 +575,6 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     }
 
     mapId = id;
-
-    image_sampler = device.create_sampler({
-        .magnification_filter = daxa::Filter::LINEAR,
-        .minification_filter = daxa::Filter::LINEAR,
-        .address_mode_u = daxa::SamplerAddressMode::REPEAT,
-        .address_mode_v = daxa::SamplerAddressMode::REPEAT,
-        .address_mode_w = daxa::SamplerAddressMode::REPEAT,
-        .min_lod = 0,
-        .max_lod = 0,
-        .debug_name = "image_sampler",
-    });
 }
 
 void BSP::calculateOffset() {
@@ -614,6 +604,7 @@ void BSP::calculateOffset() {
 
                                     found = true;
                                     std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i + 1].second << std::endl;
+                                    parent_mapId = (*it).second[i + 1].second;
                                     break;
                                 }
                             } else {
@@ -627,6 +618,7 @@ void BSP::calculateOffset() {
 
                                     found = true;
                                     std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i - 1].second << std::endl;
+                                    parent_mapId = (*it).second[i - 1].second;
                                     break;
                                 }
                             }
@@ -642,10 +634,14 @@ void BSP::calculateOffset() {
     }
 }
 
-void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer) {
+void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer, daxa::SamplerId image_sampler0, daxa::SamplerId image_sampler1) {
     // Calculate map offset based on landmarks
     calculateOffset();
     f32vec3 full_offset{offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z};
+
+    if (!this->should_draw)
+        return;
+    full_offset = full_offset + propagated_user_offset;
 
     int i = 0;
     for (auto it = texturedTris.begin(); it != texturedTris.end(); it++, i++) {
@@ -657,8 +653,8 @@ void BSP::render(daxa::Device &device, daxa::CommandList &cmd_list, daxa::Buffer
                 .vertices = device.get_device_address(bufObjects[i].buffer_id),
                 .image_id0 = (*it).second.image_id.default_view(),
                 .image_id1 = lmap_image_id.default_view(),
-                .image_sampler0 = image_sampler,
-                .image_sampler1 = image_sampler,
+                .image_sampler0 = image_sampler0,
+                .image_sampler1 = image_sampler1,
                 .offset = full_offset,
             });
             auto vert_n = static_cast<u32>((*it).second.triangles.size());
