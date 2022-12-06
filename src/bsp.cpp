@@ -577,6 +577,16 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     mapId = id;
 }
 
+static constexpr auto parentless_maps = std::array<std::string_view, 7>{
+    "c4a1",
+    "c4a1a",
+    "c4a2",
+    "c4a1c",
+    "c4a1f",
+    "c4a3",
+    "c5a1",
+};
+
 void BSP::calculateOffset() {
     if (offsets.contains(mapId)) {
         offset = offsets[mapId];
@@ -591,7 +601,9 @@ void BSP::calculateOffset() {
             bool found = false;
 
             auto parent_override = [this]() {
-                if (mapId == "c2a3e") {
+                if (std::find(parentless_maps.begin(), parentless_maps.end(), mapId) != parentless_maps.end()) {
+                    parent_mapId = "";
+                } else if (mapId == "c2a3e") {
                     parent_mapId = "c2a4";
                 } else if (mapId == "c3a1a") {
                     parent_mapId = "c3a1";

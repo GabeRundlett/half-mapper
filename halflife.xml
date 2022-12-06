@@ -8,7 +8,7 @@
         <wad>liquids</wad>
         <!-- <wad>spraypaint</wad> -->
         <!-- <wad>tempdecal</wad> -->
-        <!-- <wad>xeno</wad> -->
+        <wad>xeno</wad>
     </wads>
 
     <chapter name="Black Mesa Inbound" render="1">
@@ -43,18 +43,12 @@
     </chapter>
 
     <chapter name="Office Complex" render="1">
-        <map name="c1a2" render="1"/>
         <!-- Move Office Complex UP! -->
-        <!-- <map name="c1a2" render="1">
-            <offset targetname="c1a2" x="0" y="9300" z="0" />
-        </map> -->
+        <map name="c1a2" render="1"/>
         <map name="c1a2a" render="1"/>
         <map name="c1a2b" render="1"/>
         <!-- This has another completely impossible space -->
         <map name="c1a2c" render="1"/>
-        <!-- <map name="c1a2c" render="1">
-            <offset targetname="c1a2c" x="750" y="62" z="-949" />
-        </map> -->
         <map name="c1a2d" render="1"/>
     </chapter>
 
@@ -67,26 +61,17 @@
     </chapter>
 
     <chapter name="Blast Pit" render="1">
-        <map name="c1a4" render="1"/>
         <!-- If Blast Pit is moved slightly East and slightly South, things line up nicer -->
-        <!-- <map name="c1a4" render="1">
-            <offset targetname="c1a4" x="-600" y="0" z="-500" />
-        </map> -->
+        <map name="c1a4" render="1"/>
         <map name="c1a4k" render="1"/>
         <map name="c1a4b" render="1"/>
         <map name="c1a4d" render="1"/>
         <!-- This is a fake offset, moving the electricity section of Blast Pit 20 feet North -->
         <map name="c1a4f" render="1"/>
-        <!-- <map name="c1a4f" render="1">
-            <offset targetname="c1a4f" x="0" y="0" z="240" />
-        </map> -->
         <map name="c1a4i" render="1"/>
         <map name="c1a4g" render="1"/>
         <!-- Another fake offset of the pipe coming out of Blast Pit -->
         <map name="c1a4j" render="1"/>
-        <!-- <map name="c1a4j" render="1">
-            <offset targetname="c1a4j" x="-1500" y="0" z="-1500" />
-        </map> -->
     </chapter>
 
     <chapter name="Power Up" render="1">
@@ -114,11 +99,11 @@
         <map name="c2a3b" render="1"/>
         <map name="c2a3c" render="1"/>
         <map name="c2a3d" render="1"/>
-        <!-- First level of the second half -->
         <map name="c2a3e" render="1"/>
     </chapter>
 
     <chapter name="Residue Processing" render="1">
+        <!-- First level of the second half -->
         <map name="c2a4" render="1"/>
         <map name="c2a4a" render="1"/>
         <map name="c2a4b" render="1"/>
@@ -147,7 +132,6 @@
 
     <chapter name="Forget About Freeman" render="1">
         <map name="c3a1" render="1"/>
-        <!-- This needs to be parented manually... -->
         <map name="c3a1a" render="1"/>
         <map name="c3a1b" render="1"/>
     </chapter>
@@ -162,8 +146,27 @@
         <map name="c3a2f" render="1"/>
     </chapter>
 
-    <chapter name="Xen" render="0" />
-    <chapter name="Gonarch's Lair" render="0" />
-    <chapter name="Interloper" render="0" />
-    <chapter name="Nihilanth" render="0" />
+    <chapter name="Xen" render="1">
+        <map name="c4a1" render="1"/>
+        <map name="c4a1a" render="1"/>
+        <map name="c4a1b" render="1"/>
+    </chapter>
+
+    <chapter name="Gonarch's Lair" render="1">
+        <map name="c4a2" render="1"/>
+        <map name="c4a2a" render="1"/>
+        <map name="c4a2b" render="1"/>
+    </chapter>
+
+    <chapter name="Interloper" render="1">
+        <map name="c4a1c" render="1"/>
+        <map name="c4a1d" render="1"/>
+        <map name="c4a1e" render="1"/>
+    </chapter>
+
+    <chapter name="Nihilanth" render="1">
+        <map name="c4a1f" render="1"/>
+        <map name="c4a3" render="1"/>
+        <map name="c5a1" render="1"/>
+    </chapter>
 </mapconfig>
