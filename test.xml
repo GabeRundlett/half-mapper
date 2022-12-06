@@ -21,7 +21,7 @@
         <!-- <wad>cs_assault</wad> -->
         <!-- <wad>cs_bdog</wad> -->
         <!-- <wad>cs_cbble</wad> -->
-        <!-- <wad>cs_dust</wad> -->
+        <wad>cs_dust</wad>
         <!-- <wad>cs_havana</wad> -->
         <wad>cs_office</wad>
         <!-- <wad>decals</wad> -->
@@ -243,7 +243,7 @@
         <!-- <map name="de_cbble"       render="1"/> -->
         <!-- <map name="de_chateau"     render="1"/> -->
         <!-- <map name="de_dust"        render="1"/> -->
-        <!-- <map name="de_dust2"       render="1"/> -->
+        <map name="de_dust2"       render="1"/>
         <!-- <map name="de_inferno"     render="1"/> -->
         <!-- <map name="de_nuke"        render="1"/> -->
         <!-- <map name="de_piranesi"    render="1"/> -->

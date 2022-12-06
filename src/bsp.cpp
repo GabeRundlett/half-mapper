@@ -581,7 +581,7 @@ void BSP::calculateOffset() {
     if (offsets.contains(mapId)) {
         offset = offsets[mapId];
     } else {
-        if (mapId == "c0a0") {
+        if (mapId == "c0a0" || mapId == "cs_office") {
             // Origin for other maps
             offsets[mapId] = VERTEX(0, 0, 0);
         } else {
@@ -589,6 +589,17 @@ void BSP::calculateOffset() {
             float oy = 0;
             float oz = 0;
             bool found = false;
+
+            auto parent_override = [this]() {
+                if (mapId == "c2a3e") {
+                    parent_mapId = "c2a4";
+                } else if (mapId == "c3a1a") {
+                    parent_mapId = "c3a1";
+                } else if (mapId == "de_dust2") {
+                    parent_mapId = "cs_office";
+                }
+            };
+
             for (auto it = landmarks.begin(); it != landmarks.end(); it++) {
                 if ((*it).second.size() > 1) {
                     for (size_t i = 0; i < (*it).second.size(); i++) {
@@ -605,6 +616,7 @@ void BSP::calculateOffset() {
                                     found = true;
                                     std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i + 1].second << std::endl;
                                     parent_mapId = (*it).second[i + 1].second;
+                                    parent_override();
                                     break;
                                 }
                             } else {
@@ -619,6 +631,7 @@ void BSP::calculateOffset() {
                                     found = true;
                                     std::cout << "Matched " << (*it).second[i].second << " " << (*it).second[i - 1].second << std::endl;
                                     parent_mapId = (*it).second[i - 1].second;
+                                    parent_override();
                                     break;
                                 }
                             }

@@ -13,6 +13,7 @@
 #include "ConfigXML.hpp"
 
 #include <imgui_stdlib.h>
+#include <ImGuizmo.h>
 
 #if COUNT_DRAWS
 usize draw_count = 0;
@@ -210,12 +211,6 @@ struct HalfLife {
 
     void render(daxa::CommandList &cmd_list, daxa::BufferId gpu_input_buffer) {
         for (auto &map : maps) {
-            auto parent_iter = std::find_if(maps.begin(), maps.end(), [map](auto const &m) { return map->parent_mapId == m->mapId; });
-            if (parent_iter != maps.end()) {
-                map->propagated_user_offset = map->user_offset + (*parent_iter)->propagated_user_offset;
-            } else {
-                map->propagated_user_offset = map->user_offset;
-            }
             map->render(device, cmd_list, gpu_input_buffer, tex_image_samplers[tex_image_sampler_i], lmap_image_sampler);
         }
     }
@@ -282,25 +277,55 @@ struct App : BaseApp<App> {
 
     std::filesystem::path data_directory = ".";
 
-    void save_settings() {
+    std::vector<nlohmann::json> saved_settings;
+
+    auto get_settings_json() -> nlohmann::json {
         auto json = nlohmann::json{};
         for (auto &map : halflife.maps) {
             json[map->mapId] = nlohmann::json{map->user_offset.x, map->user_offset.y, map->user_offset.z};
         }
-        auto f = std::ofstream(data_directory / (config_name + "-offsets.json"));
-        f << std::setw(4) << json;
+        return json;
     }
-    void load_settings() {
-        auto settings_file = data_directory / (config_name + "-offsets.json");
-        if (!std::filesystem::exists(settings_file))
-            return;
-        auto json = nlohmann::json::parse(std::ifstream(settings_file));
+    void set_settings_json(nlohmann::json &json) {
         for (auto &map : halflife.maps) {
             if (json.contains(map->mapId)) {
                 auto &v = json[map->mapId];
                 map->user_offset = {v[0], v[1], v[2]};
             }
         }
+    }
+    auto save_settings_file(nlohmann::json &json) {
+        auto f = std::ofstream(data_directory / (config_name + "-offsets.json"));
+        f << std::setw(4) << json;
+    }
+
+    auto push_settings() {
+        auto json = get_settings_json();
+        saved_settings.push_back(json);
+        save_settings_file(json);
+        // std::cout << "-> " << saved_settings.size() << std::endl;
+    }
+    auto pop_settings() {
+        // std::cout << "<- " << saved_settings.size() << std::endl;
+        if (saved_settings.size() <= 1)
+            return;
+        saved_settings.pop_back();
+        auto new_json = saved_settings.back();
+        set_settings_json(new_json);
+        save_settings_file(new_json);
+    }
+
+    void save_settings() {
+        auto json = get_settings_json();
+        save_settings_file(json);
+    }
+    void load_settings() {
+        auto settings_file = data_directory / (config_name + "-offsets.json");
+        if (!std::filesystem::exists(settings_file))
+            return;
+        auto json = nlohmann::json::parse(std::ifstream(settings_file));
+        set_settings_json(json);
+        saved_settings.push_back(json);
     }
 
     GpuInput gpu_input = {};
@@ -309,6 +334,10 @@ struct App : BaseApp<App> {
         .rot = {0.0f, 0.0f, 0.0f},
     };
     bool paused = true;
+    bool is_using_gizmo = false;
+
+    ImGuizmo::OPERATION current_gizmo_op = ImGuizmo::TRANSLATE;
+    ImGuizmo::MODE current_gizmo_mode = ImGuizmo::LOCAL;
 
     HalfLife halflife = HalfLife(device);
 
@@ -316,8 +345,12 @@ struct App : BaseApp<App> {
 
     App() {
         load_settings();
-    }
 
+        player.camera.resize(static_cast<i32>(size_x), static_cast<i32>(size_y));
+        player.camera.set_pos(player.pos);
+        player.camera.set_rot(player.rot.x, player.rot.y);
+        player.update(1.0f);
+    }
     ~App() {
         device.wait_idle();
         device.collect_garbage();
@@ -328,9 +361,49 @@ struct App : BaseApp<App> {
         device.destroy_image(depth_image);
         device.destroy_image(color_image);
     }
+
+    void gizmo(BSP *map) {
+        auto cam_view = glm::translate(glm::rotate(glm::rotate(glm::mat4(1), -player.rot.y, {1, 0, 0}), player.rot.x, {0, 1, 0}), glm::vec3(player.pos.x, -player.pos.y, player.pos.z));
+        auto cam_proj = player.camera.proj_mat;
+        auto parent_iter = std::find_if(halflife.maps.begin(), halflife.maps.end(), [map](auto const &m) { return map->parent_mapId == m->mapId; });
+        if (parent_iter != halflife.maps.end()) {
+            map->propagated_user_offset = map->user_offset + (*parent_iter)->propagated_user_offset;
+        } else {
+            map->propagated_user_offset = map->user_offset;
+        }
+        auto base_offset = glm::vec3{
+            -(map->offset.x + map->ConfigOffsetChapter.x + map->propagated_user_offset.x),
+            map->offset.y + map->ConfigOffsetChapter.y + map->propagated_user_offset.y,
+            -(map->offset.z + map->ConfigOffsetChapter.z + map->propagated_user_offset.z),
+        };
+        auto modl_mat = glm::translate(glm::mat4(1.0f), base_offset);
+        ImGuiIO &io = ImGui::GetIO();
+        ImGuizmo::SetID(static_cast<int>(reinterpret_cast<usize>(map)));
+        ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+        // ImGuizmo::DrawCubes(&cam_view[0][0], &cam_proj[0][0], &modl_mat[0][0], 1);
+        f32 snap = 1.0f;
+        if (ImGuizmo::Manipulate(&cam_view[0][0], &cam_proj[0][0], current_gizmo_op, current_gizmo_mode, &modl_mat[0][0], nullptr, &snap, nullptr, nullptr)) {
+            // TODO: Don't save all the damn time
+            // save_settings();
+        }
+        f32vec3 modl_trn, modl_rot, modl_scl;
+        ImGuizmo::DecomposeMatrixToComponents(&modl_mat[0][0], &modl_trn[0], &modl_rot[0], &modl_scl[0]);
+        map->user_offset = map->user_offset + f32vec3{-(modl_trn.x - base_offset.x), modl_trn.y - base_offset.y, -(modl_trn.z - base_offset.z)};
+    }
+
     void ui_update() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
+
+        auto was_using_gizmo = is_using_gizmo;
+        is_using_gizmo = ImGuizmo::IsUsing();
+
+        if (was_using_gizmo && !is_using_gizmo) {
+            // performed action!
+            push_settings();
+        }
+
         if (paused) {
             // ImGui::ShowDemoWindow();
             ImGui::ShowMetricsWindow();
@@ -357,6 +430,7 @@ struct App : BaseApp<App> {
                         save_settings();
                     ImGui::SameLine();
                     ImGui::InputText(parent_str.c_str(), &map->parent_mapId);
+                    gizmo(map);
                 }
             }
 
@@ -421,6 +495,8 @@ struct App : BaseApp<App> {
             return;
         if (key_id == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
             toggle_pause();
+        if (key_id == GLFW_KEY_U && action == GLFW_PRESS)
+            pop_settings();
         if (!paused) {
             player.on_key(key_id, action);
         }

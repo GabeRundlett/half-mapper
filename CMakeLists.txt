@@ -23,12 +23,14 @@ find_package(daxa CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(imguizmo CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     daxa::daxa
     glfw
     tinyxml2::tinyxml2
     nlohmann_json::nlohmann_json
+    imguizmo::imguizmo
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
