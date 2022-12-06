@@ -365,12 +365,6 @@ struct App : BaseApp<App> {
     void gizmo(BSP *map) {
         auto cam_view = glm::translate(glm::rotate(glm::rotate(glm::mat4(1), -player.rot.y, {1, 0, 0}), player.rot.x, {0, 1, 0}), glm::vec3(player.pos.x, -player.pos.y, player.pos.z));
         auto cam_proj = player.camera.proj_mat;
-        auto parent_iter = std::find_if(halflife.maps.begin(), halflife.maps.end(), [map](auto const &m) { return map->parent_mapId == m->mapId; });
-        if (parent_iter != halflife.maps.end()) {
-            map->propagated_user_offset = map->user_offset + (*parent_iter)->propagated_user_offset;
-        } else {
-            map->propagated_user_offset = map->user_offset;
-        }
         auto base_offset = glm::vec3{
             -(map->offset.x + map->ConfigOffsetChapter.x + map->propagated_user_offset.x),
             map->offset.y + map->ConfigOffsetChapter.y + map->propagated_user_offset.y,
@@ -380,12 +374,8 @@ struct App : BaseApp<App> {
         ImGuiIO &io = ImGui::GetIO();
         ImGuizmo::SetID(static_cast<int>(reinterpret_cast<usize>(map)));
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-        // ImGuizmo::DrawCubes(&cam_view[0][0], &cam_proj[0][0], &modl_mat[0][0], 1);
         f32 snap = 1.0f;
-        if (ImGuizmo::Manipulate(&cam_view[0][0], &cam_proj[0][0], current_gizmo_op, current_gizmo_mode, &modl_mat[0][0], nullptr, &snap, nullptr, nullptr)) {
-            // TODO: Don't save all the damn time
-            // save_settings();
-        }
+        ImGuizmo::Manipulate(&cam_view[0][0], &cam_proj[0][0], current_gizmo_op, current_gizmo_mode, &modl_mat[0][0], nullptr, &snap, nullptr, nullptr);
         f32vec3 modl_trn, modl_rot, modl_scl;
         ImGuizmo::DecomposeMatrixToComponents(&modl_mat[0][0], &modl_trn[0], &modl_rot[0], &modl_scl[0]);
         map->user_offset = map->user_offset + f32vec3{-(modl_trn.x - base_offset.x), modl_trn.y - base_offset.y, -(modl_trn.z - base_offset.z)};
@@ -421,7 +411,24 @@ struct App : BaseApp<App> {
             ImGui::SliderFloat("Sprint Multiplier", &player.sprint_speed, 1.0f, 50.0f);
 
             for (auto map : halflife.maps) {
+                ImGui::PushID(static_cast<int>(reinterpret_cast<usize>(map)));
                 ImGui::Checkbox(map->mapId.c_str(), &map->should_draw);
+                ImGui::PopID();
+
+                auto parent_iter = std::find_if(halflife.maps.begin(), halflife.maps.end(), [map](auto const &m) { return map->parent_mapId == m->mapId; });
+                if (parent_iter != halflife.maps.end()) {
+                    map->propagated_user_offset = map->user_offset + (*parent_iter)->propagated_user_offset;
+                } else {
+                    map->propagated_user_offset = map->user_offset;
+                }
+
+                ImGui::SameLine();
+                ImGui::PushID(static_cast<int>(reinterpret_cast<usize>(map)) + 1);
+                ImGui::Checkbox("[Gizmo]", &map->show_gizmo);
+                if (map->show_gizmo)
+                    gizmo(map);
+                ImGui::PopID();
+
                 if (map->should_draw) {
                     auto offset_str = map->mapId + " offset";
                     auto parent_str = map->mapId + " parent";
@@ -430,7 +437,6 @@ struct App : BaseApp<App> {
                         save_settings();
                     ImGui::SameLine();
                     ImGui::InputText(parent_str.c_str(), &map->parent_mapId);
-                    gizmo(map);
                 }
             }
 

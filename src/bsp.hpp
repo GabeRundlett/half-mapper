@@ -136,7 +136,9 @@ class BSP {
 
     f32vec3 user_offset = {};
     f32vec3 propagated_user_offset = {};
+
     bool should_draw = true;
+    bool show_gizmo = false;
 };
 
 extern std::map<std::string, TEXTURE> textures;
