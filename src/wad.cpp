@@ -84,7 +84,7 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
                 }
 
                 if (mip == 0 && n.w * n.h > 0)
-                    n.load(device, dataUp);
+                    n.load(device, bmt.szName, dataUp);
             }
 
             textures[bmt.szName] = n;

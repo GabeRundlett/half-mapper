@@ -380,7 +380,6 @@ struct App : BaseApp<App> {
         ImGuizmo::DecomposeMatrixToComponents(&modl_mat[0][0], &modl_trn[0], &modl_rot[0], &modl_scl[0]);
         map->user_offset = map->user_offset + f32vec3{-(modl_trn.x - base_offset.x), modl_trn.y - base_offset.y, -(modl_trn.z - base_offset.z)};
     }
-
     void ui_update() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();

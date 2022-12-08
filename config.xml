@@ -3,5 +3,7 @@
     <gamepaths>
         <gamepath name="halflife">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\valve\</gamepath>
         <gamepath name="cstrike">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\cstrike\</gamepath>
+        <gamepath name="opposingforce">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\gearbox\</gamepath>
+        <gamepath name="bshift">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\bshift\</gamepath>
     </gamepaths>
 </config>

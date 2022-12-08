@@ -1,0 +1,62 @@
+<mapconfig>
+    <wads>
+        <!-- <wad>cached</wad> -->
+        <!-- <wad>decals</wad> -->
+        <!-- <wad>fonts</wad> -->
+        <!-- <wad>gfx</wad> -->
+        <wad>halflife</wad>
+        <wad>liquids</wad>
+        <!-- <wad>spraypaint</wad> -->
+        <!-- <wad>tempdecal</wad> -->
+        <wad>OPFOR</wad>
+        <wad>xeno</wad>
+    </wads>
+
+    <chapter name="Game" render="1">
+        <!-- <map name="of0a0" render="1"/> -->
+        <map name="of1a1" render="1"/>
+        <map name="of1a2" render="1"/>
+        <map name="of1a3" render="1"/>
+        <map name="of1a4" render="1"/>
+        <map name="of1a4b" render="1"/>
+        <map name="of1a5" render="1"/>
+        <map name="of1a5b" render="1"/>
+        <map name="of1a6" render="1"/>
+        <map name="of2a1" render="1"/>
+        <map name="of2a1b" render="1"/>
+        <map name="of2a2" render="1"/>
+        <map name="of2a3" render="1"/>
+        <map name="of2a4" render="1"/>
+        <map name="of2a5" render="1"/>
+        <map name="of2a6" render="1"/>
+        <map name="of3a1" render="1"/>
+        <!-- <map name="of3a1b" render="1"/> -->
+        <!-- <map name="of3a2" render="1"/> -->
+        <!-- <map name="of3a4" render="1"/> -->
+        <!-- <map name="of3a5" render="1"/> -->
+        <!-- <map name="of3a6" render="1"/> -->
+        <!-- <map name="of4a1" render="1"/> -->
+        <!-- <map name="of4a2" render="1"/> -->
+        <!-- <map name="of4a3" render="1"/> -->
+        <!-- <map name="of4a4" render="1"/> -->
+        <!-- <map name="of4a5" render="1"/> -->
+        <!-- <map name="of5a1" render="1"/> -->
+        <!-- <map name="of5a2" render="1"/> -->
+        <!-- <map name="of5a3" render="1"/> -->
+        <!-- <map name="of5a4" render="1"/> -->
+        <!-- <map name="of6a1" render="1"/> -->
+        <!-- <map name="of6a2" render="1"/> -->
+        <!-- <map name="of6a3" render="1"/> -->
+        <!-- <map name="of6a4" render="1"/> -->
+        <!-- <map name="of6a4b" render="1"/> -->
+        <!-- <map name="of6a5" render="1"/> -->
+        <!-- <map name="of7a0" render="1"/> -->
+
+        <!-- <map name="ofboot0" render="1"/> -->
+        <!-- <map name="ofboot1" render="1"/> -->
+        <!-- <map name="ofboot2" render="1"/> -->
+        <!-- <map name="ofboot3" render="1"/> -->
+        <!-- <map name="ofboot4" render="1"/> -->
+    </chapter>
+
+</mapconfig>

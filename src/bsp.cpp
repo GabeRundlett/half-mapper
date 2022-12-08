@@ -4,6 +4,8 @@
 #include "ConfigXML.hpp"
 #include <cstring>
 
+#include <png.h>
+
 std::map<std::string, TEXTURE> textures;
 std::map<std::string, std::vector<std::pair<VERTEX, std::string>>> landmarks;
 std::map<std::string, std::vector<std::string>> dontRenderModel;
@@ -17,7 +19,91 @@ static inline auto calcCoords(VERTEX v, VERTEX vs, VERTEX vt, float sShift, floa
     return ret;
 }
 
-void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_channel_n, u32 mip_level_count) {
+int save_png(std::string filename, i32 width, i32 height, i32 bitdepth, i32 colortype, u8 *data, i32 pitch, i32 transform) {
+    int i = 0;
+    int r = 0;
+    FILE *fp = NULL;
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+    png_bytep *row_pointers = NULL;
+    if (NULL == data) {
+        printf("Error: failed to save the png because the given data is NULL.\n");
+        r = -1;
+        goto error;
+    }
+    if (0 == filename.size()) {
+        printf("Error: failed to save the png because the given filename length is 0.\n");
+        r = -2;
+        goto error;
+    }
+    if (0 == pitch) {
+        printf("Error: failed to save the png because the given pitch is 0.\n");
+        r = -3;
+        goto error;
+    }
+    fp = fopen(filename.c_str(), "wb");
+    if (NULL == fp) {
+        printf("Error: failed to open the png file: %s\n", filename.c_str());
+        r = -4;
+        goto error;
+    }
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (NULL == png_ptr) {
+        printf("Error: failed to create the png write struct.\n");
+        r = -5;
+        goto error;
+    }
+    info_ptr = png_create_info_struct(png_ptr);
+    if (NULL == info_ptr) {
+        printf("Error: failed to create the png info struct.\n");
+        r = -6;
+        goto error;
+    }
+    png_set_IHDR(png_ptr,
+                 info_ptr,
+                 width,
+                 height,
+                 bitdepth,           /* e.g. 8 */
+                 colortype,          /* PNG_COLOR_TYPE_{GRAY, PALETTE, RGB, RGB_ALPHA, GRAY_ALPHA, RGBA, GA} */
+                 PNG_INTERLACE_NONE, /* PNG_INTERLACE_{NONE, ADAM7 } */
+                 PNG_COMPRESSION_TYPE_BASE,
+                 PNG_FILTER_TYPE_BASE);
+    row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * height);
+    for (i = 0; i < height; ++i) {
+        row_pointers[i] = data + i * pitch;
+    }
+    png_init_io(png_ptr, fp);
+    png_set_rows(png_ptr, info_ptr, row_pointers);
+    png_write_png(png_ptr, info_ptr, transform, NULL);
+error:
+    if (NULL != fp) {
+        fclose(fp);
+        fp = NULL;
+    }
+    if (NULL != png_ptr) {
+        if (NULL == info_ptr) {
+            printf("Error: info ptr is null. not supposed to happen here.\n");
+        }
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        png_ptr = NULL;
+        info_ptr = NULL;
+    }
+    if (NULL != row_pointers) {
+        free(row_pointers);
+        row_pointers = NULL;
+    }
+    // printf("And we're all free.\n");
+    return r;
+}
+
+void TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *data, u32 src_channel_n, u32 dst_channel_n, u32 mip_level_count) {
+#if EXPORT_ASSETS
+    // png_byte color_type = PNG_COLOR_TYPE_RGBA;
+    // if (src_channel_n == 3)
+    //     color_type = PNG_COLOR_TYPE_RGB;
+    // save_png("assets_out/" + tex_name + ".png", w, h, 8, color_type, data, 4 * w, PNG_TRANSFORM_IDENTITY);
+#endif
+
     auto sx = static_cast<u32>(w);
     auto sy = static_cast<u32>(h);
     usize image_size = sx * sy * sizeof(u8) * dst_channel_n;
@@ -34,7 +120,6 @@ void TEXTURE::load(daxa::Device &device, u8 *data, u32 src_channel_n, u32 dst_ch
             staging_buffer_ptr[ci + dst_offset] = data[ci + src_offset];
         }
     }
-    // std::copy(data, data + image_size, staging_buffer_ptr);
     auto cmd_list = device.create_command_list({
         .debug_name = "cmd_list",
     });
@@ -312,7 +397,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                     .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
                     .debug_name = "image",
                 });
-                n.load(device, dataFinal0);
+                n.load(device, bmt.szName, dataFinal0);
 
                 textures[bmt.szName] = n;
 
@@ -556,7 +641,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     lmap_tex.image_id = lmap_image_id;
     lmap_tex.w = 1024;
     lmap_tex.h = 1024;
-    lmap_tex.load(device, lmapAtlas, 3, 4, 1);
+    lmap_tex.load(device, id + "_lightmap", lmapAtlas, 3, 4, 1);
     delete[] lmapAtlas;
 
     bufObjects = new BUFFER[texturedTris.size()];

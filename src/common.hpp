@@ -19,6 +19,7 @@ using namespace daxa::math_operators;
 #include "../shared/shared.inl"
 
 #define COUNT_DRAWS 0
+#define EXPORT_ASSETS 1
 
 #if COUNT_DRAWS
 extern usize draw_count;

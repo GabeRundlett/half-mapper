@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.hpp"
+#include <string>
 
 // Extracted from http://hlbsp.sourceforge.net/index.php?content=bspdef
 
@@ -96,7 +97,7 @@ struct TEXTURE {
     daxa::ImageId image_id;
     int w, h;
 
-    void load(daxa::Device &device, uint8_t *data, u32 src_channel_n = 4, u32 dst_channel_n = 4, u32 mip_level_count = 4);
+    void load(daxa::Device &device, std::string const &tex_name, uint8_t *data, u32 src_channel_n = 4, u32 dst_channel_n = 4, u32 mip_level_count = 4);
 };
 struct LMAP {
     unsigned char *offset;
