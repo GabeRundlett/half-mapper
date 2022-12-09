@@ -20,6 +20,8 @@ using namespace daxa::math_operators;
 
 #define COUNT_DRAWS 0
 #define EXPORT_ASSETS 1
+#define EXPORT_IMAGES 1
+#define EXPORT_MESHES 1
 
 #if COUNT_DRAWS
 extern usize draw_count;

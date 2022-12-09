@@ -40,7 +40,7 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
         inWAD.read((char *)&bmt, sizeof(bmt));
         if (!textures.contains(bmt.szName)) { // Only load if it's the first appearance of the texture
 
-            TEXTURE n{};
+            BSP_TEXTURE n{};
             n.w = bmt.nWidth;
             n.h = bmt.nHeight;
 

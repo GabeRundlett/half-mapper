@@ -19,7 +19,6 @@
 usize draw_count = 0;
 #endif
 
-#define DRAW_ORIGIN_TRIANGLE 0
 #define SHOW_IMAGES_GUI 0
 
 const std::string config_name = "halflife";
@@ -193,16 +192,19 @@ struct HalfLife {
     }
 
     ~HalfLife() {
-        for (auto &[key, tex] : textures) {
-            if (tex.image_id.version != 0)
-                device.destroy_image(tex.image_id);
-        }
         for (auto &map : maps) {
+#if EXPORT_ASSETS
+            map->export_mesh();
+#endif
             device.destroy_image(map->lmap_image_id);
             for (usize i = 0; i < map->texturedTris.size(); ++i) {
                 auto &buf = map->bufObjects[i];
                 device.destroy_buffer(buf.buffer_id);
             }
+        }
+        for (auto &[key, tex] : textures) {
+            if (tex.image_id.version != 0)
+                device.destroy_image(tex.image_id);
         }
         device.destroy_sampler(lmap_image_sampler);
         for (auto sampler : tex_image_samplers)
@@ -242,12 +244,6 @@ struct App : BaseApp<App> {
     });
     daxa::TaskBufferId task_gpu_input_buffer;
 
-#if DRAW_ORIGIN_TRIANGLE
-    daxa::BufferId vertex_buffer = device.create_buffer(daxa::BufferInfo{
-        .size = sizeof(DrawVertex) * VERTEX_N,
-        .debug_name = APPNAME_PREFIX("vertex_buffer"),
-    });
-#endif
     daxa::TaskBufferId task_vertex_buffer;
 
     f32 render_scl = 1.0f;
@@ -355,9 +351,6 @@ struct App : BaseApp<App> {
         device.wait_idle();
         device.collect_garbage();
         device.destroy_buffer(gpu_input_buffer);
-#if DRAW_ORIGIN_TRIANGLE
-        device.destroy_buffer(vertex_buffer);
-#endif
         device.destroy_image(depth_image);
         device.destroy_image(color_image);
     }
@@ -539,9 +532,6 @@ struct App : BaseApp<App> {
         new_task_list.add_runtime_image(task_depth_image, depth_image);
 
         task_vertex_buffer = new_task_list.create_task_buffer({.debug_name = APPNAME_PREFIX("task_vertex_buffer")});
-#if DRAW_ORIGIN_TRIANGLE
-        new_task_list.add_runtime_buffer(task_vertex_buffer, vertex_buffer);
-#endif
 
         new_task_list.add_task({
             .used_buffers = {
@@ -565,41 +555,6 @@ struct App : BaseApp<App> {
             },
             .debug_name = APPNAME_PREFIX("Upload input"),
         });
-#if DRAW_ORIGIN_TRIANGLE
-        new_task_list.add_task({
-            .used_buffers = {
-                {task_vertex_buffer, daxa::TaskBufferAccess::TRANSFER_WRITE},
-            },
-            .task = [this](daxa::TaskRuntime runtime) {
-                auto cmd_list = runtime.get_command_list();
-                auto vertex_staging_buffer = device.create_buffer({
-                    .memory_flags = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
-                    .size = sizeof(DrawVertex) * VERTEX_N,
-                    .debug_name = APPNAME_PREFIX("vertex_staging_buffer"),
-                });
-                cmd_list.destroy_buffer_deferred(vertex_staging_buffer);
-                auto buffer_ptr = device.get_host_address_as<DrawVertex>(vertex_staging_buffer);
-                *buffer_ptr = DrawVertex{{256.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}};
-                ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f}};
-                ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{0.0f, 256.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 1.0f}};
-                ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{256.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f}};
-                ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{0.0f, 256.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 1.0f}};
-                ++buffer_ptr;
-                *buffer_ptr = DrawVertex{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f}};
-                ++buffer_ptr;
-                cmd_list.copy_buffer_to_buffer({
-                    .src_buffer = vertex_staging_buffer,
-                    .dst_buffer = vertex_buffer,
-                    .size = sizeof(DrawVertex) * VERTEX_N,
-                });
-            },
-            .debug_name = APPNAME_PREFIX("Upload vertices"),
-        });
-#endif
         new_task_list.add_task({
             .used_buffers = {
                 {task_vertex_buffer, daxa::TaskBufferAccess::VERTEX_SHADER_READ_ONLY},
@@ -624,25 +579,7 @@ struct App : BaseApp<App> {
                     .render_area = {.x = 0, .y = 0, .width = render_size.x, .height = render_size.y},
                 });
                 cmd_list.set_pipeline(draw_raster_pipeline);
-
-#if DRAW_ORIGIN_TRIANGLE
-                cmd_list.push_constant(DrawPush{
-                    .gpu_input = this->device.get_device_address(gpu_input_buffer),
-                    .vertices = this->device.get_device_address(vertex_buffer),
-                    .image_id0 = 0,
-                    .image_id1 = 0,
-                    .image_sampler0 = 0,
-                    .image_sampler1 = 0,
-                    .offset = f32vec3{0.0f, 0.0f, 0.0f},
-                });
-                cmd_list.draw({.vertex_count = VERTEX_N});
-#if COUNT_DRAWS
-                draw_count++;
-#endif
-#endif
-
                 halflife.render(cmd_list, gpu_input_buffer);
-
                 cmd_list.end_renderpass();
             },
             .debug_name = APPNAME_PREFIX("Draw to render images"),
@@ -673,8 +610,12 @@ struct App : BaseApp<App> {
 
 int main() {
     App app = {};
+// #if EXPORT_ASSETS
+//     app.update();
+// #else
     while (true) {
         if (app.update())
             break;
     }
+// #endif
 }

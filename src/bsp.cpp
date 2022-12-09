@@ -5,11 +5,43 @@
 #include <cstring>
 
 #include <png.h>
+#include <assimp/scene.h>
+#include <assimp/material.h>
+#include <assimp/Exporter.hpp>
 
-std::map<std::string, TEXTURE> textures;
+struct AssetExporter {
+    aiScene scene;
+
+    std::vector<aiMaterial *> materials;
+    std::vector<aiMesh *> meshes;
+
+    AssetExporter() {
+        scene.mRootNode = new aiNode();
+    }
+
+    ~AssetExporter() {
+        scene.mMaterials = materials.data();
+        scene.mNumMaterials = materials.size();
+        scene.mMeshes = meshes.data();
+        scene.mNumMeshes = meshes.size();
+
+        Assimp::Exporter exporter;
+        const aiExportFormatDesc *format = exporter.GetExportFormatDescription(0);
+        exporter.Export(&scene, format->id, "assets_out/halflife.dae");
+
+        scene.mMaterials = nullptr;
+        scene.mNumMaterials = 0;
+        scene.mMeshes = nullptr;
+        scene.mNumMeshes = 0;
+    }
+};
+
+std::map<std::string, BSP_TEXTURE> textures;
 std::map<std::string, std::vector<std::pair<VERTEX, std::string>>> landmarks;
 std::map<std::string, std::vector<std::string>> dontRenderModel;
 std::map<std::string, VERTEX> offsets;
+
+static AssetExporter exporter;
 
 // Correct UV coordinates
 static inline auto calcCoords(VERTEX v, VERTEX vs, VERTEX vt, float sShift, float tShift) -> COORDS {
@@ -19,7 +51,8 @@ static inline auto calcCoords(VERTEX v, VERTEX vs, VERTEX vt, float sShift, floa
     return ret;
 }
 
-int save_png(std::string filename, i32 width, i32 height, i32 bitdepth, i32 colortype, u8 *data, i32 pitch, i32 transform) {
+static int save_png(std::string filename, i32 width, i32 height, i32 bitdepth, i32 colortype, u8 *data, i32 pitch, i32 transform) {
+#if EXPORT_IMAGES
     int i = 0;
     int r = 0;
     FILE *fp = NULL;
@@ -92,16 +125,82 @@ error:
         free(row_pointers);
         row_pointers = NULL;
     }
-    // printf("And we're all free.\n");
     return r;
+#else
+    return 0;
+#endif
 }
 
-void TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *data, u32 src_channel_n, u32 dst_channel_n, u32 mip_level_count) {
+void BSP::export_mesh() {
+#if EXPORT_MESHES
+    auto scene_node = new aiNode();
+
+    auto const mesh_n = this->texturedTris.size();
+
+    auto const offset_i = exporter.materials.size();
+    exporter.materials.reserve(mesh_n + offset_i);
+    exporter.meshes.reserve(mesh_n + offset_i);
+
+    scene_node->mMeshes = new u32[mesh_n];
+    scene_node->mNumMeshes = mesh_n;
+    scene_node->mName = mapId;
+
+    usize mesh_i = 0;
+    for (auto [texture_name, texture_mesh_info] : this->texturedTris) {
+        exporter.materials.push_back(new aiMaterial());
+        exporter.meshes.push_back(new aiMesh());
+
+        scene_node->mMeshes[mesh_i] = mesh_i + offset_i;
+
+        auto &mesh = *exporter.meshes.back();
+        mesh.mMaterialIndex = mesh_i + offset_i;
+
+        // Create material
+        {
+            auto *tex_str_ptr = new aiString(texture_name + ".png");
+            auto &mat = *exporter.materials.back();
+            mat.AddProperty(tex_str_ptr, AI_MATKEY_TEXTURE(u32(aiTextureType_DIFFUSE), 0u));
+        }
+
+        // generate mesh
+        {
+            usize vert_n = texture_mesh_info.triangles.size();
+            mesh.mVertices = new aiVector3D[vert_n];
+            mesh.mNumVertices = vert_n;
+            mesh.mTextureCoords[0] = new aiVector3D[vert_n];
+            mesh.mNumUVComponents[0] = vert_n;
+            usize vert_i = 0;
+            for (auto const &v : texture_mesh_info.triangles) {
+                f32vec3 full_offset{offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z};
+                auto o = full_offset + propagated_user_offset;
+                mesh.mVertices[vert_i] = aiVector3D(v.x + o.x, v.y + o.y, v.z + o.z) * 0.0254f;
+                mesh.mTextureCoords[0][vert_i] = aiVector3D(v.u, 1.0f - v.v, 0);
+                ++vert_i;
+            }
+            usize face_n = vert_n / 3;
+            mesh.mFaces = new aiFace[face_n];
+            mesh.mNumFaces = face_n;
+            for (usize face_i = 0; face_i < face_n; ++face_i) {
+                aiFace &face = mesh.mFaces[face_i];
+                face.mIndices = new u32[3];
+                face.mNumIndices = 3;
+                face.mIndices[0] = face_i * 3 + 0;
+                face.mIndices[1] = face_i * 3 + 1;
+                face.mIndices[2] = face_i * 3 + 2;
+            }
+        }
+        ++mesh_i;
+    }
+    exporter.scene.mRootNode->addChildren(1, &scene_node);
+#endif
+}
+
+void BSP_TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *data, u32 src_channel_n, u32 dst_channel_n, u32 mip_level_count) {
 #if EXPORT_ASSETS
-    // png_byte color_type = PNG_COLOR_TYPE_RGBA;
-    // if (src_channel_n == 3)
-    //     color_type = PNG_COLOR_TYPE_RGB;
-    // save_png("assets_out/" + tex_name + ".png", w, h, 8, color_type, data, 4 * w, PNG_TRANSFORM_IDENTITY);
+    png_byte color_type = PNG_COLOR_TYPE_RGBA;
+    if (src_channel_n == 3)
+        color_type = PNG_COLOR_TYPE_RGB;
+    save_png("assets_out/" + tex_name + ".png", w, h, 8, color_type, data, src_channel_n * w, PNG_TRANSFORM_IDENTITY);
 #endif
 
     auto sx = static_cast<u32>(w);
@@ -295,7 +394,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
 
     std::vector<std::string> texNames;
 
-    for (unsigned int i = 0; i < theader.nMipTextures; i++) {
+    for (u32 i = 0; i < theader.nMipTextures; i++) {
         inBSP.seekg(bHeader.lump[LUMP_TEXTURES].nOffset + texOffSets[i], std::ios::beg);
 
         BSPMIPTEX bmt{};
@@ -333,8 +432,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                 auto *dataFinal2 = new unsigned char[bmt.nWidth * bmt.nHeight / 4];
                 auto *dataFinal3 = new unsigned char[bmt.nWidth * bmt.nHeight / 16];
 
-                for (unsigned int y = 0; y < bmt.nHeight; y++) {
-                    for (unsigned int x = 0; x < bmt.nWidth; x++) {
+                for (u32 y = 0; y < bmt.nHeight; y++) {
+                    for (u32 x = 0; x < bmt.nWidth; x++) {
                         dataFinal0[(x + y * bmt.nWidth) * 4] = data4[data0[y * bmt.nWidth + x] * 3];
                         dataFinal0[(x + y * bmt.nWidth) * 4 + 1] = data4[data0[y * bmt.nWidth + x] * 3 + 1];
                         dataFinal0[(x + y * bmt.nWidth) * 4 + 2] = data4[data0[y * bmt.nWidth + x] * 3 + 2];
@@ -346,8 +445,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                         }
                     }
                 }
-                for (unsigned int y = 0; y < bmt.nHeight / 2; y++) {
-                    for (unsigned int x = 0; x < bmt.nWidth / 2; x++) {
+                for (u32 y = 0; y < bmt.nHeight / 2; y++) {
+                    for (u32 x = 0; x < bmt.nWidth / 2; x++) {
                         dataFinal1[(x + y * bmt.nWidth / 2) * 4] = data4[data1[y * bmt.nWidth / 2 + x] * 3];
                         dataFinal1[(x + y * bmt.nWidth / 2) * 4 + 1] = data4[data1[y * bmt.nWidth / 2 + x] * 3 + 1];
                         dataFinal1[(x + y * bmt.nWidth / 2) * 4 + 2] = data4[data1[y * bmt.nWidth / 2 + x] * 3 + 2];
@@ -359,8 +458,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                         }
                     }
                 }
-                for (unsigned int y = 0; y < bmt.nHeight / 4; y++) {
-                    for (unsigned int x = 0; x < bmt.nWidth / 4; x++) {
+                for (u32 y = 0; y < bmt.nHeight / 4; y++) {
+                    for (u32 x = 0; x < bmt.nWidth / 4; x++) {
                         dataFinal2[(x + y * bmt.nWidth / 4) * 4] = data4[data2[y * bmt.nWidth / 4 + x] * 3];
                         dataFinal2[(x + y * bmt.nWidth / 4) * 4 + 1] = data4[data2[y * bmt.nWidth / 4 + x] * 3 + 1];
                         dataFinal2[(x + y * bmt.nWidth / 4) * 4 + 2] = data4[data2[y * bmt.nWidth / 4 + x] * 3 + 2];
@@ -372,8 +471,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                         }
                     }
                 }
-                for (unsigned int y = 0; y < bmt.nHeight / 8; y++) {
-                    for (unsigned int x = 0; x < bmt.nWidth / 8; x++) {
+                for (u32 y = 0; y < bmt.nHeight / 8; y++) {
+                    for (u32 x = 0; x < bmt.nWidth / 8; x++) {
                         dataFinal3[(x + y * bmt.nWidth / 8) * 4] = data4[data3[y * bmt.nWidth / 8 + x] * 3];
                         dataFinal3[(x + y * bmt.nWidth / 8) * 4 + 1] = data4[data3[y * bmt.nWidth / 8 + x] * 3 + 1];
                         dataFinal3[(x + y * bmt.nWidth / 8) * 4 + 2] = data4[data3[y * bmt.nWidth / 8 + x] * 3 + 2];
@@ -386,7 +485,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                     }
                 }
 
-                TEXTURE n{};
+                BSP_TEXTURE n{};
                 n.w = bmt.nWidth;
                 n.h = bmt.nHeight;
 
@@ -412,7 +511,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                 delete[] dataFinal3;
 
             } else {
-                TEXTURE n{};
+                BSP_TEXTURE n{};
                 n.w = 1;
                 n.h = 1;
                 textures[bmt.szName] = n;
@@ -486,7 +585,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     memset(lmapRover, 0, 1024 * 4);
 
     // Light map "rover" algorithm from Quake 2 (http://fabiensanglard.net/quake2/quake2_opengl_renderer.php)
-    for (unsigned int i = 0; i < lmaps.size(); i++) {
+    for (u32 i = 0; i < lmaps.size(); i++) {
         int best = 1024;
         int best2 = 0;
 
@@ -569,7 +668,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         float const mid_tex_t = (float)lmh / 2.0f;
         float const fX = lmaps[i].finalX;
         float const fY = lmaps[i].finalY;
-        TEXTURE const t = textures[faceTexName];
+        BSP_TEXTURE const t = textures[faceTexName];
 
         std::vector<VECFINAL> *vt = &texturedTris[faceTexName].triangles;
 
@@ -637,11 +736,11 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         .debug_name = "image",
     });
 
-    TEXTURE lmap_tex;
+    BSP_TEXTURE lmap_tex;
     lmap_tex.image_id = lmap_image_id;
     lmap_tex.w = 1024;
     lmap_tex.h = 1024;
-    lmap_tex.load(device, id + "_lightmap", lmapAtlas, 3, 4, 1);
+    lmap_tex.load(device, sMapEntry.m_szName + "_lightmap", lmapAtlas, 3, 4, 1);
     delete[] lmapAtlas;
 
     bufObjects = new BUFFER[texturedTris.size()];

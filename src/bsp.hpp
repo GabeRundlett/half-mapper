@@ -93,7 +93,7 @@ struct VECFINAL {
         vl = c2.v;
     }
 };
-struct TEXTURE {
+struct BSP_TEXTURE {
     daxa::ImageId image_id;
     int w, h;
 
@@ -124,6 +124,7 @@ class BSP {
     daxa::ImageId lmap_image_id;
 
     void calculateOffset();
+    void export_mesh();
 
     unsigned char *lmapAtlas;
 
@@ -142,6 +143,6 @@ class BSP {
     bool show_gizmo = false;
 };
 
-extern std::map<std::string, TEXTURE> textures;
+extern std::map<std::string, BSP_TEXTURE> textures;
 extern std::map<std::string, std::vector<std::pair<VERTEX, std::string>>> landmarks;
 extern std::map<std::string, std::vector<std::string>> dontRenderModel;
