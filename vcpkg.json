@@ -2,13 +2,7 @@
   "name": "half-mapper",
   "version": "0.1.0",
   "dependencies": [
-    {
-      "name": "daxa",
-      "features": [
-        "glslang",
-        "utils"
-      ]
-    },
+    "daxa",
     "glfw3",
     "glm",
     {
@@ -26,7 +20,7 @@
     "libpng",
     "assimp"
   ],
-  "builtin-baseline": "163fe7bd3d67c41200617caaa245b5ba2ba854e6",
+  "builtin-baseline": "877e3dc2323a4d4c3c75e7168c22a0c4e921d4db",
   "overrides": [
     {
       "name": "glfw3",

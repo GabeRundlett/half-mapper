@@ -222,7 +222,7 @@ constexpr usize VERTEX_N = 6;
 
 struct App : BaseApp<App> {
     // clang-format off
-    daxa::RasterPipeline draw_raster_pipeline = pipeline_compiler.create_raster_pipeline({
+    std::shared_ptr<daxa::RasterPipeline> draw_raster_pipeline = pipeline_manager.add_raster_pipeline({
         .vertex_shader_info = {.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_VERT"}}}},
         .fragment_shader_info = {.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_FRAG"}}}},
         .color_attachments = {{.format = swapchain.get_format()}},
@@ -457,7 +457,7 @@ struct App : BaseApp<App> {
         ImGui::Render();
     }
     void on_update() {
-        reload_pipeline(draw_raster_pipeline);
+        pipeline_manager.reload_all();
         ui_update();
 
         player.camera.resize(static_cast<i32>(size_x), static_cast<i32>(size_y));
@@ -578,7 +578,7 @@ struct App : BaseApp<App> {
                     }},
                     .render_area = {.x = 0, .y = 0, .width = render_size.x, .height = render_size.y},
                 });
-                cmd_list.set_pipeline(draw_raster_pipeline);
+                cmd_list.set_pipeline(*draw_raster_pipeline);
                 halflife.render(cmd_list, gpu_input_buffer);
                 cmd_list.end_renderpass();
             },
@@ -610,12 +610,12 @@ struct App : BaseApp<App> {
 
 int main() {
     App app = {};
-// #if EXPORT_ASSETS
-//     app.update();
-// #else
+#if EXPORT_ASSETS
+    app.update();
+#else
     while (true) {
         if (app.update())
             break;
     }
-// #endif
+#endif
 }

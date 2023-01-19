@@ -236,7 +236,7 @@
         <!-- <map name="cs_havana"      render="1"/> -->
         <!-- <map name="cs_italy"       render="1"/> -->
         <!-- <map name="cs_militia"     render="1"/> -->
-        <map name="cs_office"      render="1"/>
+        <!-- <map name="cs_office"      render="1"/> -->
         <!-- <map name="cs_siege"       render="1"/> -->
         <!-- <map name="de_airstrip"    render="1"/> -->
         <!-- <map name="de_aztec"       render="1"/> -->

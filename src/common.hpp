@@ -19,7 +19,7 @@ using namespace daxa::math_operators;
 #include "../shared/shared.inl"
 
 #define COUNT_DRAWS 0
-#define EXPORT_ASSETS 1
+#define EXPORT_ASSETS 0
 #define EXPORT_IMAGES 1
 #define EXPORT_MESHES 1
 

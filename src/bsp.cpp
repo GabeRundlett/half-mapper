@@ -135,7 +135,12 @@ void BSP::export_mesh() {
 #if EXPORT_MESHES
     auto scene_node = new aiNode();
 
-    auto const mesh_n = this->texturedTris.size();
+    auto const mesh_n = static_cast<usize>(std::count_if(this->texturedTris.begin(), this->texturedTris.end(), [](std::pair<std::string, TEXSTUFF> const &tex) {
+        if (tex.first != "aaatrigger" && tex.first != "origin" && tex.first != "clip" && tex.first != "sky" && tex.first[0] != '{' && !tex.second.triangles.empty()) {
+            return true;
+        }
+        return false;
+    }));
 
     auto const offset_i = exporter.materials.size();
     exporter.materials.reserve(mesh_n + offset_i);
@@ -147,49 +152,51 @@ void BSP::export_mesh() {
 
     usize mesh_i = 0;
     for (auto [texture_name, texture_mesh_info] : this->texturedTris) {
-        exporter.materials.push_back(new aiMaterial());
-        exporter.meshes.push_back(new aiMesh());
+        if (texture_name != "aaatrigger" && texture_name != "origin" && texture_name != "clip" && texture_name != "sky" && texture_name[0] != '{' && !texture_mesh_info.triangles.empty()) {
+            exporter.materials.push_back(new aiMaterial());
+            exporter.meshes.push_back(new aiMesh());
 
-        scene_node->mMeshes[mesh_i] = mesh_i + offset_i;
+            scene_node->mMeshes[mesh_i] = mesh_i + offset_i;
 
-        auto &mesh = *exporter.meshes.back();
-        mesh.mMaterialIndex = mesh_i + offset_i;
+            auto &mesh = *exporter.meshes.back();
+            mesh.mMaterialIndex = mesh_i + offset_i;
 
-        // Create material
-        {
-            auto *tex_str_ptr = new aiString(texture_name + ".png");
-            auto &mat = *exporter.materials.back();
-            mat.AddProperty(tex_str_ptr, AI_MATKEY_TEXTURE(u32(aiTextureType_DIFFUSE), 0u));
-        }
-
-        // generate mesh
-        {
-            usize vert_n = texture_mesh_info.triangles.size();
-            mesh.mVertices = new aiVector3D[vert_n];
-            mesh.mNumVertices = vert_n;
-            mesh.mTextureCoords[0] = new aiVector3D[vert_n];
-            mesh.mNumUVComponents[0] = vert_n;
-            usize vert_i = 0;
-            for (auto const &v : texture_mesh_info.triangles) {
-                f32vec3 full_offset{offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z};
-                auto o = full_offset + propagated_user_offset;
-                mesh.mVertices[vert_i] = aiVector3D(v.x + o.x, v.y + o.y, v.z + o.z) * 0.0254f;
-                mesh.mTextureCoords[0][vert_i] = aiVector3D(v.u, 1.0f - v.v, 0);
-                ++vert_i;
+            // Create material
+            {
+                auto *tex_str_ptr = new aiString(texture_name + ".png");
+                auto &mat = *exporter.materials.back();
+                mat.AddProperty(tex_str_ptr, AI_MATKEY_TEXTURE(u32(aiTextureType_DIFFUSE), 0u));
             }
-            usize face_n = vert_n / 3;
-            mesh.mFaces = new aiFace[face_n];
-            mesh.mNumFaces = face_n;
-            for (usize face_i = 0; face_i < face_n; ++face_i) {
-                aiFace &face = mesh.mFaces[face_i];
-                face.mIndices = new u32[3];
-                face.mNumIndices = 3;
-                face.mIndices[0] = face_i * 3 + 0;
-                face.mIndices[1] = face_i * 3 + 1;
-                face.mIndices[2] = face_i * 3 + 2;
+
+            // generate mesh
+            {
+                usize vert_n = texture_mesh_info.triangles.size();
+                mesh.mVertices = new aiVector3D[vert_n];
+                mesh.mNumVertices = vert_n;
+                mesh.mTextureCoords[0] = new aiVector3D[vert_n];
+                mesh.mNumUVComponents[0] = vert_n;
+                usize vert_i = 0;
+                for (auto const &v : texture_mesh_info.triangles) {
+                    f32vec3 full_offset{offset.x + ConfigOffsetChapter.x, offset.y + ConfigOffsetChapter.y, offset.z + ConfigOffsetChapter.z};
+                    auto o = full_offset + propagated_user_offset;
+                    mesh.mVertices[vert_i] = aiVector3D(v.x + o.x, v.y + o.y, v.z + o.z) * 0.0254f;
+                    mesh.mTextureCoords[0][vert_i] = aiVector3D(v.u, 1.0f - v.v, 0);
+                    ++vert_i;
+                }
+                usize face_n = vert_n / 3;
+                mesh.mFaces = new aiFace[face_n];
+                mesh.mNumFaces = face_n;
+                for (usize face_i = 0; face_i < face_n; ++face_i) {
+                    aiFace &face = mesh.mFaces[face_i];
+                    face.mIndices = new u32[3];
+                    face.mNumIndices = 3;
+                    face.mIndices[0] = face_i * 3 + 0;
+                    face.mIndices[1] = face_i * 3 + 1;
+                    face.mIndices[2] = face_i * 3 + 2;
+                }
             }
+            ++mesh_i;
         }
-        ++mesh_i;
     }
     exporter.scene.mRootNode->addChildren(1, &scene_node);
 #endif

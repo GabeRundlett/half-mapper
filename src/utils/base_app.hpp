@@ -10,6 +10,8 @@ using namespace std::chrono_literals;
 #include <daxa/utils/imgui.hpp>
 #include <imgui_impl_glfw.h>
 
+#include <daxa/utils/pipeline_manager.hpp>
+
 #include <daxa/utils/math_operators.hpp>
 using namespace daxa::math_operators;
 
@@ -48,7 +50,8 @@ struct BaseApp : AppWindow<T> {
         .debug_name = APPNAME_PREFIX("swapchain"),
     });
 
-    daxa::PipelineCompiler pipeline_compiler = device.create_pipeline_compiler({
+    daxa::PipelineManager pipeline_manager = daxa::PipelineManager({
+        .device = device,
         .shader_compile_options = {
             .root_paths = {
                 DAXA_SHADER_INCLUDE_DIR,
@@ -56,7 +59,7 @@ struct BaseApp : AppWindow<T> {
             },
             .language = daxa::ShaderLanguage::GLSL,
         },
-        .debug_name = APPNAME_PREFIX("pipeline_compiler"),
+        .debug_name = APPNAME_PREFIX("pipeline_manager"),
     });
 
     ImFont *mono_font = nullptr;
@@ -80,7 +83,6 @@ struct BaseApp : AppWindow<T> {
         ImGui_ImplGlfw_InitForVulkan(AppWindow<T>::glfw_window_ptr, true);
         return daxa::ImGuiRenderer({
             .device = device,
-            .pipeline_compiler = pipeline_compiler,
             .format = swapchain.get_format(),
         });
     }
