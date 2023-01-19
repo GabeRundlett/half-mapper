@@ -190,33 +190,6 @@ struct BaseApp : AppWindow<T> {
         return false;
     }
 
-    auto reload_pipeline(daxa::ComputePipeline &pipeline) -> bool {
-        if (pipeline_compiler.check_if_sources_changed(pipeline)) {
-            auto new_pipeline = pipeline_compiler.recreate_compute_pipeline(pipeline);
-            if (new_pipeline.is_ok()) {
-                pipeline = new_pipeline.value();
-                return true;
-            } else {
-                // imgui_console.add_log("[error] Failed to recompile a pipeline:");
-                // imgui_console.add_log("[error]   - %s", new_pipeline.message().c_str());
-            }
-        }
-        return false;
-    }
-    auto reload_pipeline(daxa::RasterPipeline &pipeline) -> bool {
-        if (pipeline_compiler.check_if_sources_changed(pipeline)) {
-            auto new_pipeline = pipeline_compiler.recreate_raster_pipeline(pipeline);
-            if (new_pipeline.is_ok()) {
-                pipeline = new_pipeline.value();
-                return true;
-            } else {
-                // imgui_console.add_log("[error] Failed to recompile a pipeline:");
-                // imgui_console.add_log("[error]   - %s", new_pipeline.message().c_str());
-            }
-        }
-        return false;
-    }
-
     auto record_loop_task_list() -> daxa::TaskList {
         daxa::TaskList new_task_list = daxa::TaskList({
             .device = device,
