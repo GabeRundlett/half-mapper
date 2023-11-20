@@ -2,7 +2,16 @@
   "name": "half-mapper",
   "version": "0.1.0",
   "dependencies": [
-    "daxa",
+    {
+      "name": "daxa",
+      "features": [
+        "utils-pipeline-manager-spirv-validation",
+        "utils-imgui",
+        "utils-mem",
+        "utils-pipeline-manager-glslang",
+        "utils-task-graph"
+      ]
+    },
     "glfw3",
     "glm",
     {
@@ -13,18 +22,10 @@
       ]
     },
     "imguizmo",
-    "sdl2",
     "tinyxml2",
     "nlohmann-json",
-    "glew",
     "libpng",
     "assimp"
   ],
-  "builtin-baseline": "877e3dc2323a4d4c3c75e7168c22a0c4e921d4db",
-  "overrides": [
-    {
-      "name": "glfw3",
-      "version-string": "custom"
-    }
-  ]
+  "builtin-baseline": "78ba9711d30c64a6b40462c72f356c681e2255f3"
 }

@@ -14,18 +14,18 @@ struct GpuInput {
     f32mat4x4 mvp_mat;
 };
 
-DAXA_ENABLE_BUFFER_PTR(DrawVertex)
-DAXA_ENABLE_BUFFER_PTR(GpuInput)
+DAXA_DECL_BUFFER_PTR(DrawVertex)
+DAXA_DECL_BUFFER_PTR(GpuInput)
 
 struct DrawPush {
     daxa_BufferPtr(GpuInput) gpu_input;
     daxa_BufferPtr(DrawVertex) vertices;
-    daxa_Image2Df32 image_id0;
-    daxa_Image2Df32 image_id1;
+    daxa_ImageViewId image_id0;
+    daxa_ImageViewId image_id1;
     daxa_SamplerId image_sampler0;
     daxa_SamplerId image_sampler1;
     f32vec3 offset;
 };
 
-#define VERTICES(i) deref(daxa_push_constant.vertices[i])
-#define INPUT deref(daxa_push_constant.gpu_input)
+#define VERTICES(i) deref(push.vertices[i])
+#define INPUT deref(push.gpu_input)

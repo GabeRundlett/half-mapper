@@ -15,9 +15,6 @@ add_executable(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 set_project_warnings(${PROJECT_NAME})
 
-set(DAXA_INCLUDE_DIR "$<TARGET_FILE_DIR:hlmm>/../vcpkg_installed/x64-$<LOWER_CASE:$<PLATFORM_ID>>/include")
-target_compile_definitions(${PROJECT_NAME} PRIVATE DAXA_SHADER_INCLUDE_DIR="${DAXA_INCLUDE_DIR}")
-
 find_package(daxa CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(tinyxml2 CONFIG REQUIRED)

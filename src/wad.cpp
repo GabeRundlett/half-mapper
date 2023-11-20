@@ -48,8 +48,8 @@ auto wad_load(daxa::Device &device, const std::vector<std::string> &szGamePaths,
                 .format = daxa::Format::R8G8B8A8_SRGB,
                 .size = {std::max(bmt.nWidth, 1u), std::max(bmt.nHeight, 1u), 1},
                 .mip_level_count = 4,
-                .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
-                .debug_name = "image",
+                .usage = daxa::ImageUsageFlagBits::SHADER_SAMPLED | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
+                .name = "image",
             });
 
             // Sizes of each mipmap

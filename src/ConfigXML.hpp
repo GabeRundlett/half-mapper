@@ -30,7 +30,7 @@
 // Set the default game paths for Half Life.
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define PATH_DELIM '\\'
-#define HALFLIFE_DEFAULT_GAMEPATH "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Half-Life\\valve\\"
+#define HALFLIFE_DEFAULT_GAMEPATH "D:\\Program Files (x86)\\Steam\\steamapps\\common\\Half-Life\\valve\\"
 #elif defined(__linux__)
 #define PATH_DELIM '/'
 #define HALFLIFE_DEFAULT_GAMEPATH "~/.steam/steamapps/common/Half-Life/valve/"

@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include <daxa/daxa.hpp>
-#include <daxa/utils/task_list.hpp>
+#include <daxa/utils/task_graph.hpp>
 #include <daxa/utils/math_operators.hpp>
 using namespace daxa::types;
 using namespace daxa::math_operators;

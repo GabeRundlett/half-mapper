@@ -129,7 +129,7 @@ class BSP {
     unsigned char *lmapAtlas;
 
     std::map<std::string, TEXSTUFF> texturedTris;
-    BUFFER *bufObjects;
+    std::vector<BUFFER> bufObjects;
     std::string mapId;
     std::string parent_mapId;
     VERTEX offset;

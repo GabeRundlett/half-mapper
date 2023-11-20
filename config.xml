@@ -1,9 +1,9 @@
 <config>
     <window width="800" height="600" fov="60" isometric="0" fullscreen="0" multisampling="1" vsync="0"/>
     <gamepaths>
-        <gamepath name="halflife">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\valve\</gamepath>
-        <gamepath name="cstrike">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\cstrike\</gamepath>
-        <gamepath name="opposingforce">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\gearbox\</gamepath>
-        <gamepath name="bshift">C:\Program Files (x86)\Steam\steamapps\common\Half-Life\bshift\</gamepath>
+        <gamepath name="halflife">D:\Program Files (x86)\Steam\steamapps\common\Half-Life\valve\</gamepath>
+        <gamepath name="cstrike">D:\Program Files (x86)\Steam\steamapps\common\Half-Life\cstrike\</gamepath>
+        <gamepath name="opposingforce">D:\Program Files (x86)\Steam\steamapps\common\Half-Life\gearbox\</gamepath>
+        <gamepath name="bshift">D:\Program Files (x86)\Steam\steamapps\common\Half-Life\bshift\</gamepath>
     </gamepaths>
 </config>

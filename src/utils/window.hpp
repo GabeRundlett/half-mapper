@@ -136,12 +136,11 @@ struct AppWindow {
     }
 
     auto get_native_platform() -> daxa::NativeWindowPlatform {
-        switch (glfwGetPlatform()) {
-        case GLFW_PLATFORM_WIN32: return daxa::NativeWindowPlatform::WIN32_API;
-        case GLFW_PLATFORM_X11: return daxa::NativeWindowPlatform::XLIB_API;
-        // case GLFW_PLATFORM_WAYLAND: return daxa::NativeWindowPlatform::WAYLAND_API;
-        default: return daxa::NativeWindowPlatform::UNKNOWN;
-        }
+#if defined(_WIN32)
+        return daxa::NativeWindowPlatform::WIN32_API;
+#elif defined(__linux__)
+        return daxa::NativeWindowPlatform::XLIB_API;
+#endif
     }
 
     inline void set_mouse_pos(f32 x, f32 y) {

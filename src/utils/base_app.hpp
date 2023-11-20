@@ -25,29 +25,15 @@ using Clock = std::chrono::high_resolution_clock;
 
 template <typename T>
 struct BaseApp : AppWindow<T> {
-    daxa::Context daxa_ctx = daxa::create_context({
-        .enable_validation = false,
-    });
-    daxa::Device device = daxa_ctx.create_device({
-        .selector = [](daxa::DeviceProperties const &device_props) -> i32 {
-            i32 score = 0;
-            switch (device_props.device_type) {
-            case daxa::DeviceType::DISCRETE_GPU: score += 10000; break;
-            case daxa::DeviceType::VIRTUAL_GPU: score += 1000; break;
-            case daxa::DeviceType::INTEGRATED_GPU: score += 100; break;
-            default: break;
-            }
-            return score;
-        },
-        .debug_name = APPNAME_PREFIX("device"),
-    });
+    daxa::Instance daxa_ctx;
+    daxa::Device device;
 
     daxa::Swapchain swapchain = device.create_swapchain({
         .native_window = AppWindow<T>::get_native_handle(),
         .native_window_platform = AppWindow<T>::get_native_platform(),
-        .present_mode = daxa::PresentMode::DO_NOT_WAIT_FOR_VBLANK,
+        .present_mode = daxa::PresentMode::IMMEDIATE,
         .image_usage = daxa::ImageUsageFlagBits::TRANSFER_DST,
-        .debug_name = APPNAME_PREFIX("swapchain"),
+        .name = APPNAME_PREFIX("swapchain"),
     });
 
     daxa::PipelineManager pipeline_manager = daxa::PipelineManager({
@@ -59,7 +45,7 @@ struct BaseApp : AppWindow<T> {
             },
             .language = daxa::ShaderLanguage::GLSL,
         },
-        .debug_name = APPNAME_PREFIX("pipeline_manager"),
+        .name = APPNAME_PREFIX("pipeline_manager"),
     });
 
     ImFont *mono_font = nullptr;
@@ -93,9 +79,16 @@ struct BaseApp : AppWindow<T> {
     daxa::CommandSubmitInfo submit_info;
 
     daxa::ImageId swapchain_image;
-    daxa::TaskImageId task_swapchain_image;
+    daxa::TaskImage task_swapchain_image;
 
-    BaseApp() : AppWindow<T>(APPNAME) {
+    BaseApp() : AppWindow<T>(APPNAME),
+                daxa_ctx{daxa::create_instance({})},
+                device{daxa_ctx.create_device({
+                    .enable_buffer_device_address_capture_replay = false,
+                    .max_allowed_buffers = 40000,
+                    .max_allowed_images = 40000,
+                    .name = "device",
+                })} {
         constexpr auto ColorFromBytes = [](u8 r, u8 g, u8 b, u8 a = 255) {
             return ImVec4((f32)r / 255.0f, (f32)g / 255.0f, (f32)b / 255.0f, (f32)a / 255.0f);
         };
@@ -190,36 +183,36 @@ struct BaseApp : AppWindow<T> {
         return false;
     }
 
-    auto record_loop_task_list() -> daxa::TaskList {
-        daxa::TaskList new_task_list = daxa::TaskList({
+    auto record_loop_task_graph() -> daxa::TaskGraph {
+        daxa::TaskGraph new_task_graph = daxa::TaskGraph({
             .device = device,
             // .dont_use_split_barriers = true,
             .swapchain = swapchain,
-            .debug_name = APPNAME_PREFIX("task_list"),
+            .name = APPNAME_PREFIX("task_graph"),
         });
-        task_swapchain_image = new_task_list.create_task_image({
+        task_swapchain_image = daxa::TaskImage({
             .swapchain_image = true,
-            .debug_name = APPNAME_PREFIX("task_swapchain_image"),
+            .name = APPNAME_PREFIX("task_swapchain_image"),
         });
-        new_task_list.add_runtime_image(task_swapchain_image, swapchain_image);
+        new_task_graph.use_persistent_image(task_swapchain_image);
 
-        reinterpret_cast<T *>(this)->record_tasks(new_task_list);
+        reinterpret_cast<T *>(this)->record_tasks(new_task_graph);
 
-        new_task_list.add_task({
-            .used_images = {
-                {task_swapchain_image, daxa::TaskImageAccess::COLOR_ATTACHMENT, daxa::ImageMipArraySlice{}},
+        new_task_graph.add_task({
+            .uses = {
+                daxa::TaskImageUse<daxa::TaskImageAccess::COLOR_ATTACHMENT>{task_swapchain_image},
             },
-            .task = [this](daxa::TaskRuntime runtime) {
+            .task = [this](daxa::TaskInterface runtime) {
                 auto cmd_list = runtime.get_command_list();
                 imgui_renderer.record_commands(ImGui::GetDrawData(), cmd_list, swapchain_image, AppWindow<T>::size_x, AppWindow<T>::size_y);
             },
-            .debug_name = APPNAME_PREFIX("ImGui Task"),
+            .name = APPNAME_PREFIX("ImGui Task"),
         });
 
-        new_task_list.submit(&submit_info);
-        new_task_list.present({});
-        new_task_list.complete();
+        new_task_graph.submit({});
+        new_task_graph.present({});
+        new_task_graph.complete({});
 
-        return new_task_list;
+        return new_task_graph;
     }
 };

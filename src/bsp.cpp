@@ -133,7 +133,7 @@ error:
 
 void BSP::export_mesh() {
 #if EXPORT_MESHES
-    auto scene_node = new aiNode();
+    auto scene_node = new aiNode(mapId);
 
     auto const mesh_n = static_cast<usize>(std::count_if(this->texturedTris.begin(), this->texturedTris.end(), [](std::pair<std::string, TEXSTUFF> const &tex) {
         if (tex.first != "aaatrigger" && tex.first != "origin" && tex.first != "clip" && tex.first != "sky" && tex.first[0] != '{' && !tex.second.triangles.empty()) {
@@ -214,9 +214,9 @@ void BSP_TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *da
     auto sy = static_cast<u32>(h);
     usize image_size = sx * sy * sizeof(u8) * dst_channel_n;
     auto texture_staging_buffer = device.create_buffer({
-        .memory_flags = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
+        .allocate_info = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
         .size = static_cast<u32>(image_size),
-        .debug_name = "texture_staging_buffer",
+        .name = "texture_staging_buffer",
     });
     u8 *staging_buffer_ptr = device.get_host_address_as<u8>(texture_staging_buffer);
     for (usize i = 0; i < sx * sy; ++i) {
@@ -227,17 +227,17 @@ void BSP_TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *da
         }
     }
     auto cmd_list = device.create_command_list({
-        .debug_name = "cmd_list",
+        .name = "cmd_list",
     });
     cmd_list.pipeline_barrier({
-        .awaited_pipeline_access = daxa::AccessConsts::HOST_WRITE,
-        .waiting_pipeline_access = daxa::AccessConsts::TRANSFER_READ,
+        .src_access = daxa::AccessConsts::HOST_WRITE,
+        .dst_access = daxa::AccessConsts::TRANSFER_READ,
     });
     cmd_list.pipeline_barrier_image_transition({
-        .awaited_pipeline_access = daxa::AccessConsts::HOST_WRITE,
-        .waiting_pipeline_access = daxa::AccessConsts::TRANSFER_WRITE,
-        .before_layout = daxa::ImageLayout::UNDEFINED,
-        .after_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
+        .src_access = daxa::AccessConsts::HOST_WRITE,
+        .dst_access = daxa::AccessConsts::TRANSFER_WRITE,
+        .src_layout = daxa::ImageLayout::UNDEFINED,
+        .dst_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
         .image_slice = {
             .base_mip_level = 0,
             .level_count = mip_level_count,
@@ -276,18 +276,18 @@ void BSP_TEXTURE::load(daxa::Device &device, std::string const &tex_name, u8 *da
 
 void upload_buffer_data(daxa::Device &device, daxa::BufferId buffer_id, u8 *data, u32 size) {
     auto staging_buffer = device.create_buffer({
-        .memory_flags = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
+        .allocate_info = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
         .size = static_cast<u32>(size),
-        .debug_name = "staging_buffer",
+        .name = "staging_buffer",
     });
     u8 *staging_buffer_ptr = device.get_host_address_as<u8>(staging_buffer);
     std::copy(data, data + size, staging_buffer_ptr);
     auto cmd_list = device.create_command_list({
-        .debug_name = "cmd_list",
+        .name = "cmd_list",
     });
     cmd_list.pipeline_barrier({
-        .awaited_pipeline_access = daxa::AccessConsts::HOST_WRITE,
-        .waiting_pipeline_access = daxa::AccessConsts::TRANSFER_WRITE,
+        .src_access = daxa::AccessConsts::HOST_WRITE,
+        .dst_access = daxa::AccessConsts::TRANSFER_WRITE,
     });
     cmd_list.copy_buffer_to_buffer({
         .src_buffer = staging_buffer,
@@ -295,8 +295,8 @@ void upload_buffer_data(daxa::Device &device, daxa::BufferId buffer_id, u8 *data
         .size = size,
     });
     cmd_list.pipeline_barrier({
-        .awaited_pipeline_access = daxa::AccessConsts::TRANSFER_WRITE,
-        .waiting_pipeline_access = daxa::AccessConsts::READ,
+        .src_access = daxa::AccessConsts::TRANSFER_WRITE,
+        .dst_access = daxa::AccessConsts::READ,
     });
     cmd_list.complete();
     device.submit_commands({
@@ -500,8 +500,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
                     .format = daxa::Format::R8G8B8A8_SRGB,
                     .size = {bmt.nWidth, bmt.nHeight, 1},
                     .mip_level_count = 4,
-                    .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
-                    .debug_name = "image",
+                    .usage = daxa::ImageUsageFlagBits::SHADER_SAMPLED | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
+                    .name = "image",
                 });
                 n.load(device, bmt.szName, dataFinal0);
 
@@ -625,8 +625,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         int const finalX = lmaps[i].finalX;
         int const finalY = lmaps[i].finalY;
 
-#define ATXY(_x, _y) (((_x) + ((_y)*1024)) * 3)
-#define LMXY(_x, _y) (((_x) + ((_y)*lmaps[i].w)) * 3)
+#define ATXY(_x, _y) (((_x) + ((_y) * 1024)) * 3)
+#define LMXY(_x, _y) (((_x) + ((_y) * lmaps[i].w)) * 3)
         for (int y = 0; y < lmaps[i].h; y++) {
             for (int x = 0; x < lmaps[i].w; x++) {
                 if (lmaps[i].offset) {
@@ -739,8 +739,8 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     lmap_image_id = device.create_image({
         .format = daxa::Format::R8G8B8A8_SRGB,
         .size = {1024, 1024, 1},
-        .usage = daxa::ImageUsageFlagBits::SHADER_READ_ONLY | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
-        .debug_name = "image",
+        .usage = daxa::ImageUsageFlagBits::SHADER_SAMPLED | daxa::ImageUsageFlagBits::TRANSFER_SRC | daxa::ImageUsageFlagBits::TRANSFER_DST,
+        .name = "image",
     });
 
     BSP_TEXTURE lmap_tex;
@@ -750,7 +750,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
     lmap_tex.load(device, sMapEntry.m_szName + "_lightmap", lmapAtlas, 3, 4, 1);
     delete[] lmapAtlas;
 
-    bufObjects = new BUFFER[texturedTris.size()];
+    bufObjects = std::vector<BUFFER>(texturedTris.size());
 
     int i = 0;
     totalTris = 0;
@@ -759,7 +759,7 @@ BSP::BSP(daxa::Device &device, const std::vector<std::string> &szGamePaths, cons
         auto buf_size = static_cast<u32>((*it).second.triangles.size() * sizeof(VECFINAL));
         buf.buffer_id = device.create_buffer({
             .size = buf_size,
-            .debug_name = "textured_tri_buffer",
+            .name = "textured_tri_buffer",
         });
         upload_buffer_data(device, buf.buffer_id, reinterpret_cast<u8 *>((*it).second.triangles.data()), buf_size);
         totalTris += (*it).second.triangles.size();

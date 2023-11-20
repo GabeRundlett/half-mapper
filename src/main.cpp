@@ -76,7 +76,7 @@ struct HalfLife {
             .minification_filter = daxa::Filter::LINEAR,
             .min_lod = 0,
             .max_lod = 0,
-            .debug_name = "lmap_image_sampler",
+            .name = "lmap_image_sampler",
         });
 
         tex_image_samplers[0] = device.create_sampler({
@@ -85,7 +85,7 @@ struct HalfLife {
             .address_mode_u = daxa::SamplerAddressMode::REPEAT,
             .address_mode_v = daxa::SamplerAddressMode::REPEAT,
             .address_mode_w = daxa::SamplerAddressMode::REPEAT,
-            .debug_name = "tex_image_samplers[0]",
+            .name = "tex_image_samplers[0]",
         });
         tex_image_samplers[1] = device.create_sampler({
             .magnification_filter = daxa::Filter::LINEAR,
@@ -93,7 +93,7 @@ struct HalfLife {
             .address_mode_u = daxa::SamplerAddressMode::REPEAT,
             .address_mode_v = daxa::SamplerAddressMode::REPEAT,
             .address_mode_w = daxa::SamplerAddressMode::REPEAT,
-            .debug_name = "tex_image_samplers[1]",
+            .name = "tex_image_samplers[1]",
         });
         tex_image_samplers[2] = device.create_sampler({
             .magnification_filter = daxa::Filter::LINEAR,
@@ -103,7 +103,7 @@ struct HalfLife {
             .address_mode_w = daxa::SamplerAddressMode::REPEAT,
             .min_lod = 0,
             .max_lod = 3,
-            .debug_name = "tex_image_samplers[2]",
+            .name = "tex_image_samplers[2]",
         });
         tex_image_samplers[3] = device.create_sampler({
             .magnification_filter = daxa::Filter::LINEAR,
@@ -115,55 +115,63 @@ struct HalfLife {
             .max_anisotropy = 16.0f,
             .min_lod = 0,
             .max_lod = 3,
-            .debug_name = "tex_image_samplers[3]",
+            .name = "tex_image_samplers[3]",
         });
 
         {
-            daxa::TaskList mip_task_list = daxa::TaskList({
+            daxa::TaskGraph mip_task_graph = daxa::TaskGraph({
                 .device = device,
-                .debug_name = "mip task list",
+                .name = "mip task list",
             });
-            auto task_mip_image = mip_task_list.create_task_image({.initial_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL, .debug_name = "task_mip_image"});
-            std::set<daxa::ImageId> images;
+            std::set<daxa::ImageId> image_set;
             for (auto map : maps) {
                 for (auto [key, tex] : map->texturedTris) {
-                    images.emplace(tex.image_id);
+                    image_set.emplace(tex.image_id);
                 }
             }
-            for (auto image_id : images) {
-                if (image_id.version != 0)
-                    mip_task_list.add_runtime_image(task_mip_image, image_id);
+            std::vector<daxa::ImageId> images = {};
+            std::vector<daxa::ImageSliceState> latest_slice_states = {};
+            auto image_n = image_set.size();
+            images.reserve(image_n);
+            latest_slice_states.reserve(image_n);
+            for (auto image_id : image_set) {
+                if (image_id.version == 0)
+                    continue;
+                images.push_back(image_id);
+                latest_slice_states.push_back({.latest_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL});
             }
+            auto task_mip_image = daxa::TaskImage({.initial_images = {images, latest_slice_states}, .name = "task_mip_image"});
+            mip_task_graph.use_persistent_image(task_mip_image);
             for (u32 i = 0; i < 3; ++i) {
-                mip_task_list.add_task({
-                    .used_images = {
-                        {task_mip_image, daxa::TaskImageAccess::TRANSFER_READ, daxa::ImageMipArraySlice{.base_mip_level = i}},
-                        {task_mip_image, daxa::TaskImageAccess::TRANSFER_WRITE, daxa::ImageMipArraySlice{.base_mip_level = i + 1}},
+                auto mip_view_a = task_mip_image.view().view({.base_mip_level = i});
+                auto mip_view_b = task_mip_image.view().view({.base_mip_level = i + 1});
+                mip_task_graph.add_task({
+                    .uses = {
+                        daxa::TaskImageUse<daxa::TaskImageAccess::TRANSFER_READ>{mip_view_a},
+                        daxa::TaskImageUse<daxa::TaskImageAccess::TRANSFER_WRITE>{mip_view_b},
                     },
-                    .task = [=, this](daxa::TaskRuntime const &runtime) {
+                    .task = [=, this](daxa::TaskInterface const &runtime) {
                         auto cmd_list = runtime.get_command_list();
-                        auto images = runtime.get_images(task_mip_image);
-                        for (auto image_id : images) {
+                        for (size_t j = 0; j < image_n; ++j) {
+                            auto image_id = runtime.uses[mip_view_a].image(j);
                             auto image_info = device.info_image(image_id);
                             auto mip_size = std::array<i32, 3>{std::max<i32>(1, static_cast<i32>(image_info.size.x)), std::max<i32>(1, static_cast<i32>(image_info.size.y)), std::max<i32>(1, static_cast<i32>(image_info.size.z))};
-                            for (u32 j = 0; j < i; ++j) {
+                            for (u32 k = 0; k < i; ++k) {
                                 mip_size = {std::max<i32>(1, mip_size[0] / 2), std::max<i32>(1, mip_size[1] / 2), std::max<i32>(1, mip_size[2] / 2)};
                             }
                             auto next_mip_size = std::array<i32, 3>{std::max<i32>(1, mip_size[0] / 2), std::max<i32>(1, mip_size[1] / 2), std::max<i32>(1, mip_size[2] / 2)};
                             cmd_list.blit_image_to_image({
                                 .src_image = image_id,
-                                .src_image_layout = daxa::ImageLayout::TRANSFER_SRC_OPTIMAL, // TODO: get from TaskRuntime
+                                .src_image_layout = daxa::ImageLayout::TRANSFER_SRC_OPTIMAL, // TODO: get from TaskInterface
                                 .dst_image = image_id,
                                 .dst_image_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
                                 .src_slice = {
-                                    .image_aspect = image_info.aspect,
                                     .mip_level = i,
                                     .base_array_layer = 0,
                                     .layer_count = 1,
                                 },
                                 .src_offsets = {{{0, 0, 0}, {mip_size[0], mip_size[1], mip_size[2]}}},
                                 .dst_slice = {
-                                    .image_aspect = image_info.aspect,
                                     .mip_level = i + 1,
                                     .base_array_layer = 0,
                                     .layer_count = 1,
@@ -173,20 +181,19 @@ struct HalfLife {
                             });
                         }
                     },
-                    .debug_name = "mip_level_" + std::to_string(i),
+                    .name = "mip_level_" + std::to_string(i),
                 });
             }
-            mip_task_list.add_task({
-                .used_images = {
-                    {task_mip_image, daxa::TaskImageAccess::SHADER_READ_ONLY, daxa::ImageMipArraySlice{.base_mip_level = 0, .level_count = 4}},
+            mip_task_graph.add_task({
+                .uses = {
+                    daxa::TaskImageUse<daxa::TaskImageAccess::FRAGMENT_SHADER_SAMPLED>{task_mip_image.view().view({.base_mip_level = 0, .level_count = 4})},
                 },
-                .task = [](daxa::TaskRuntime const &) {},
-                .debug_name = "Transition",
+                .task = [](daxa::TaskInterface const &) {},
+                .name = "Transition",
             });
-            auto submit_info = daxa::CommandSubmitInfo{};
-            mip_task_list.submit(&submit_info);
-            mip_task_list.complete();
-            mip_task_list.execute();
+            mip_task_graph.submit({});
+            mip_task_graph.complete({});
+            mip_task_graph.execute({});
             device.wait_idle();
         }
     }
@@ -223,8 +230,8 @@ constexpr usize VERTEX_N = 6;
 struct App : BaseApp<App> {
     // clang-format off
     std::shared_ptr<daxa::RasterPipeline> draw_raster_pipeline = pipeline_manager.add_raster_pipeline({
-        .vertex_shader_info = {.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_VERT"}}}},
-        .fragment_shader_info = {.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_FRAG"}}}},
+        .vertex_shader_info = daxa::ShaderCompileInfo{.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_VERT"}}}},
+        .fragment_shader_info = daxa::ShaderCompileInfo{.source = daxa::ShaderFile{"draw.glsl"}, .compile_options = {.defines = {daxa::ShaderDefine{"DRAW_FRAG"}}}},
         .color_attachments = {{.format = swapchain.get_format()}},
         .depth_test = {
             .depth_attachment_format = daxa::Format::D24_UNORM_S8_UINT,
@@ -235,16 +242,16 @@ struct App : BaseApp<App> {
             .face_culling = daxa::FaceCullFlagBits::BACK_BIT,
         },
         .push_constant_size = sizeof(DrawPush),
-        .debug_name = APPNAME_PREFIX("draw_raster_pipeline"),
+        .name = APPNAME_PREFIX("draw_raster_pipeline"),
     }).value();
     // clang-format on
     daxa::BufferId gpu_input_buffer = device.create_buffer(daxa::BufferInfo{
         .size = sizeof(GpuInput),
-        .debug_name = APPNAME_PREFIX("gpu_input_buffer"),
+        .name = APPNAME_PREFIX("gpu_input_buffer"),
     });
-    daxa::TaskBufferId task_gpu_input_buffer;
 
-    daxa::TaskBufferId task_vertex_buffer;
+    daxa::TaskBuffer task_vertex_buffer;
+    std::vector<daxa::BufferId> vertex_buffers;
 
     f32 render_scl = 1.0f;
     u32vec2 render_size = calc_render_size();
@@ -258,18 +265,16 @@ struct App : BaseApp<App> {
 
     daxa::ImageId color_image = device.create_image({
         .format = daxa::Format::R8G8B8A8_SRGB,
-        .aspect = daxa::ImageAspectFlagBits::COLOR,
         .size = {render_size.x, render_size.y, 1},
         .usage = daxa::ImageUsageFlagBits::COLOR_ATTACHMENT | daxa::ImageUsageFlagBits::TRANSFER_SRC,
     });
-    daxa::TaskImageId task_color_image;
+    daxa::TaskImage task_color_image;
     daxa::ImageId depth_image = device.create_image({
         .format = daxa::Format::D24_UNORM_S8_UINT,
-        .aspect = daxa::ImageAspectFlagBits::DEPTH | daxa::ImageAspectFlagBits::STENCIL,
         .size = {render_size.x, render_size.y, 1},
         .usage = daxa::ImageUsageFlagBits::DEPTH_STENCIL_ATTACHMENT,
     });
-    daxa::TaskImageId task_depth_image;
+    daxa::TaskImage task_depth_image;
 
     std::filesystem::path data_directory = ".";
 
@@ -337,7 +342,7 @@ struct App : BaseApp<App> {
 
     HalfLife halflife = HalfLife(device);
 
-    daxa::TaskList loop_task_list = record_loop_task_list();
+    daxa::TaskGraph loop_task_graph = record_loop_task_graph();
 
     App() {
         load_settings();
@@ -465,15 +470,32 @@ struct App : BaseApp<App> {
         player.camera.set_rot(player.rot.x, player.rot.y);
         player.update(delta_time);
 
-        loop_task_list.remove_runtime_image(task_swapchain_image, swapchain_image);
         swapchain_image = swapchain.acquire_next_image();
-        loop_task_list.add_runtime_image(task_swapchain_image, swapchain_image);
+        task_swapchain_image.set_images({.images = {&swapchain_image, 1}});
         if (swapchain_image.is_empty())
             return;
 
         auto mat = player.camera.get_vp();
         gpu_input.mvp_mat = daxa::math_operators::mat_from_span<f32, 4, 4>(std::span<f32, 4 * 4>{glm::value_ptr(mat), 4 * 4});
-        loop_task_list.execute();
+
+        auto buffer_n = size_t{};
+        for (auto &map : halflife.maps) {
+            buffer_n += map->bufObjects.size();
+        }
+        if (buffer_n == 0)
+            return;
+
+        vertex_buffers.resize(buffer_n);
+        auto buffer_i = size_t{};
+        for (auto &map : halflife.maps) {
+            for (auto &buf : map->bufObjects) {
+                vertex_buffers[buffer_i] = buf.buffer_id;
+                ++buffer_i;
+            }
+        }
+        task_vertex_buffer.set_buffers({.buffers = vertex_buffers});
+
+        loop_task_graph.execute({});
 
         std::cout << std::flush;
     }
@@ -511,38 +533,38 @@ struct App : BaseApp<App> {
             on_update();
         }
     }
-    void recreate_render_image(daxa::ImageId &image_id, daxa::TaskImageId &task_image_id) {
+    void recreate_render_image(daxa::ImageId &image_id, daxa::TaskImage &task_image_id) {
         auto image_info = device.info_image(image_id);
-        loop_task_list.remove_runtime_image(task_image_id, image_id);
         device.destroy_image(image_id);
         render_size = calc_render_size();
         image_info.size = {render_size.x, render_size.y, 1},
         image_id = device.create_image(image_info);
-        loop_task_list.add_runtime_image(task_image_id, image_id);
+        task_image_id.set_images({.images = {&image_id, 1}});
     }
 
     void toggle_pause() {
         set_mouse_capture(paused);
         paused = !paused;
     }
-    void record_tasks(daxa::TaskList &new_task_list) {
-        task_color_image = new_task_list.create_task_image({.debug_name = APPNAME_PREFIX("task_color_image")});
-        new_task_list.add_runtime_image(task_color_image, color_image);
-        task_depth_image = new_task_list.create_task_image({.debug_name = APPNAME_PREFIX("task_depth_image")});
-        new_task_list.add_runtime_image(task_depth_image, depth_image);
+    void record_tasks(daxa::TaskGraph &new_task_graph) {
+        task_color_image = daxa::TaskImage({.initial_images = {.images = {&color_image, 1}}, .name = APPNAME_PREFIX("task_color_image")});
+        new_task_graph.use_persistent_image(task_color_image);
+        task_depth_image = daxa::TaskImage({.initial_images = {.images = {&depth_image, 1}}, .name = APPNAME_PREFIX("task_depth_image")});
+        new_task_graph.use_persistent_image(task_depth_image);
 
-        task_vertex_buffer = new_task_list.create_task_buffer({.debug_name = APPNAME_PREFIX("task_vertex_buffer")});
+        task_vertex_buffer = daxa::TaskBuffer({.name = APPNAME_PREFIX("task_vertex_buffer")});
+        new_task_graph.use_persistent_buffer(task_vertex_buffer);
 
-        new_task_list.add_task({
-            .used_buffers = {
-                {task_vertex_buffer, daxa::TaskBufferAccess::TRANSFER_WRITE},
+        new_task_graph.add_task({
+            .uses = {
+                daxa::TaskBufferUse<daxa::TaskBufferAccess::TRANSFER_WRITE>{task_vertex_buffer},
             },
-            .task = [this](daxa::TaskRuntime runtime) {
+            .task = [this](daxa::TaskInterface runtime) {
                 auto cmd_list = runtime.get_command_list();
                 auto gpu_input_staging_buffer = device.create_buffer({
-                    .memory_flags = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
                     .size = sizeof(GpuInput),
-                    .debug_name = APPNAME_PREFIX("gpu_input_staging_buffer"),
+                    .allocate_info = daxa::MemoryFlagBits::HOST_ACCESS_RANDOM,
+                    .name = APPNAME_PREFIX("gpu_input_staging_buffer"),
                 });
                 cmd_list.destroy_buffer_deferred(gpu_input_staging_buffer);
                 auto gpu_input_buffer_ptr = device.get_host_address_as<GpuInput>(gpu_input_staging_buffer);
@@ -553,17 +575,15 @@ struct App : BaseApp<App> {
                     .size = sizeof(GpuInput),
                 });
             },
-            .debug_name = APPNAME_PREFIX("Upload input"),
+            .name = APPNAME_PREFIX("Upload input"),
         });
-        new_task_list.add_task({
-            .used_buffers = {
-                {task_vertex_buffer, daxa::TaskBufferAccess::VERTEX_SHADER_READ_ONLY},
+        new_task_graph.add_task({
+            .uses = {
+                daxa::TaskBufferUse<daxa::TaskBufferAccess::VERTEX_SHADER_READ>{task_vertex_buffer},
+                daxa::TaskImageUse<daxa::TaskImageAccess::COLOR_ATTACHMENT>{task_color_image},
+                daxa::TaskImageUse<daxa::TaskImageAccess::DEPTH_ATTACHMENT>{task_depth_image},
             },
-            .used_images = {
-                {task_color_image, daxa::TaskImageAccess::COLOR_ATTACHMENT, daxa::ImageMipArraySlice{}},
-                {task_depth_image, daxa::TaskImageAccess::DEPTH_ATTACHMENT, daxa::ImageMipArraySlice{}},
-            },
-            .task = [this](daxa::TaskRuntime runtime) {
+            .task = [this](daxa::TaskInterface runtime) {
                 auto cmd_list = runtime.get_command_list();
                 cmd_list.begin_renderpass({
                     .color_attachments = {{
@@ -582,28 +602,26 @@ struct App : BaseApp<App> {
                 halflife.render(cmd_list, gpu_input_buffer);
                 cmd_list.end_renderpass();
             },
-            .debug_name = APPNAME_PREFIX("Draw to render images"),
+            .name = APPNAME_PREFIX("Draw to render images"),
         });
-        new_task_list.add_task({
-            .used_images = {
-                {task_color_image, daxa::TaskImageAccess::TRANSFER_READ, daxa::ImageMipArraySlice{}},
-                {task_swapchain_image, daxa::TaskImageAccess::TRANSFER_WRITE, daxa::ImageMipArraySlice{}},
+        new_task_graph.add_task({
+            .uses = {
+                daxa::TaskImageUse<daxa::TaskImageAccess::TRANSFER_READ>{task_color_image},
+                daxa::TaskImageUse<daxa::TaskImageAccess::TRANSFER_WRITE>{task_swapchain_image},
             },
-            .task = [this](daxa::TaskRuntime task_runtime) {
+            .task = [this](daxa::TaskInterface task_runtime) {
                 auto cmd_list = task_runtime.get_command_list();
                 cmd_list.blit_image_to_image({
                     .src_image = color_image,
                     .src_image_layout = daxa::ImageLayout::TRANSFER_SRC_OPTIMAL,
                     .dst_image = swapchain_image,
                     .dst_image_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL,
-                    .src_slice = {.image_aspect = daxa::ImageAspectFlagBits::COLOR},
                     .src_offsets = {{{0, 0, 0}, {static_cast<i32>(render_size.x), static_cast<i32>(render_size.y), 1}}},
-                    .dst_slice = {.image_aspect = daxa::ImageAspectFlagBits::COLOR},
                     .dst_offsets = {{{0, 0, 0}, {static_cast<i32>(size_x), static_cast<i32>(size_y), 1}}},
                     .filter = daxa::Filter::LINEAR,
                 });
             },
-            .debug_name = APPNAME_PREFIX("Blit (render to swapchain)"),
+            .name = APPNAME_PREFIX("Blit (render to swapchain)"),
         });
     }
 };
