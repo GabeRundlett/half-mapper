@@ -38,16 +38,13 @@
             <offset targetname="c1a1b" x="0" y="-96" z="0" />
         </map>
         <map name="c1a1c" render="1"/>
-        <!-- This has a completely impossible space -->
         <map name="c1a1d" render="1"/>
     </chapter>
 
     <chapter name="Office Complex" render="1">
-        <!-- Move Office Complex UP! -->
         <map name="c1a2" render="1"/>
         <map name="c1a2a" render="1"/>
         <map name="c1a2b" render="1"/>
-        <!-- This has another completely impossible space -->
         <map name="c1a2c" render="1"/>
         <map name="c1a2d" render="1"/>
     </chapter>
@@ -61,16 +58,13 @@
     </chapter>
 
     <chapter name="Blast Pit" render="1">
-        <!-- If Blast Pit is moved slightly East and slightly South, things line up nicer -->
         <map name="c1a4" render="1"/>
         <map name="c1a4k" render="1"/>
         <map name="c1a4b" render="1"/>
         <map name="c1a4d" render="1"/>
-        <!-- This is a fake offset, moving the electricity section of Blast Pit 20 feet North -->
         <map name="c1a4f" render="1"/>
         <map name="c1a4i" render="1"/>
         <map name="c1a4g" render="1"/>
-        <!-- Another fake offset of the pipe coming out of Blast Pit -->
         <map name="c1a4j" render="1"/>
     </chapter>
 
@@ -103,7 +97,6 @@
     </chapter>
 
     <chapter name="Residue Processing" render="1">
-        <!-- First level of the second half -->
         <map name="c2a4" render="1"/>
         <map name="c2a4a" render="1"/>
         <map name="c2a4b" render="1"/>

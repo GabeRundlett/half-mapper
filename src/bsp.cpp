@@ -26,8 +26,15 @@ struct AssetExporter {
         scene.mNumMeshes = meshes.size();
 
         Assimp::Exporter exporter;
+        // auto outFormatCount = exporter.GetExportFormatCount();
+        // for (int i = 0; i < outFormatCount; ++i)
+        // {
+        //     const aiExportFormatDesc *format = exporter.GetExportFormatDescription(i);
+        //     exporter.Export(&scene, format->id, std::string("assets_out/halflife.") + format->fileExtension);
+        // }
+
         const aiExportFormatDesc *format = exporter.GetExportFormatDescription(0);
-        exporter.Export(&scene, format->id, "assets_out/halflife.dae");
+        exporter.Export(&scene, format->id, std::string("assets_out/halflife.") + format->fileExtension);
 
         scene.mMaterials = nullptr;
         scene.mNumMaterials = 0;

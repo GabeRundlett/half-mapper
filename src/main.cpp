@@ -140,6 +140,7 @@ struct HalfLife {
                 images.push_back(image_id);
                 latest_slice_states.push_back({.latest_layout = daxa::ImageLayout::TRANSFER_DST_OPTIMAL});
             }
+            image_n = images.size();
             auto task_mip_image = daxa::TaskImage({.initial_images = {images, latest_slice_states}, .name = "task_mip_image"});
             mip_task_graph.use_persistent_image(task_mip_image);
             for (u32 i = 0; i < 3; ++i) {

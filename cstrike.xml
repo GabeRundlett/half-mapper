@@ -10,43 +10,103 @@
         <wad>halflife</wad>
     </wads>
 
+    <chapter name="Oil Rig" render="1">
+        <map name="as_oilrig" render="1" />
+    </chapter>
+
+    <chapter name="747" render="1">
+        <map name="cs_747" render="1" />
+    </chapter>
+
     <chapter name="Assault" render="1">
         <map name="cs_assault" render="1" />
     </chapter>
 
-    <chapter name="Italy">
-        <map name="cs_italy" />
+    <chapter name="Backalley" render="1">
+        <map name="cs_backalley" render="1" />
     </chapter>
 
-    <chapter name="Office">
-        <map name="cs_office" />
+    <chapter name="Estate" render="1">
+        <map name="cs_estate" render="1" />
     </chapter>
 
-    <chapter name="Aztec">
-        <map name="de_aztec" />
+    <chapter name="Havana" render="1">
+        <map name="cs_havana" render="1" />
     </chapter>
 
-    <chapter name="Dust">
-        <map name="de_dust" />
+    <chapter name="Italy" render="1">
+        <map name="cs_italy" render="1" />
     </chapter>
 
-    <chapter name="Dust2">
-        <map name="de_dust2" />
+    <chapter name="Militia" render="1">
+        <map name="cs_militia" render="1" />
     </chapter>
 
-    <chapter name="Inferno">
-        <map name="de_inferno" />
+    <chapter name="Office" render="1">
+        <map name="cs_office" render="1" />
     </chapter>
 
-    <chapter name="Nuke">
-        <map name="de_nuke" />
+    <chapter name="Siege" render="1">
+        <map name="cs_siege" render="1" />
     </chapter>
 
-    <chapter name="Train">
-        <map name="de_train" />
+    <chapter name="Airstrip" render="1">
+        <map name="de_airstrip" render="1" />
     </chapter>
 
-    <chapter name="Vertigo">
-        <map name="de_vertigo" />
+    <chapter name="Aztec" render="1">
+        <map name="de_aztec" render="1" />
+    </chapter>
+
+    <chapter name="Cobble" render="1">
+        <map name="de_cbble" render="1" />
+    </chapter>
+
+    <chapter name="Chateau" render="1">
+        <map name="de_chateau" render="1" />
+    </chapter>
+
+    <chapter name="Dust" render="1">
+        <map name="de_dust" render="1" />
+    </chapter>
+
+    <chapter name="Dust2" render="1">
+        <map name="de_dust2" render="1" />
+    </chapter>
+
+    <chapter name="Inferno" render="1">
+        <map name="de_inferno" render="1" />
+    </chapter>
+
+    <chapter name="Nuke" render="1">
+        <map name="de_nuke" render="1" />
+    </chapter>
+
+    <chapter name="Piranesi" render="1">
+        <map name="de_piranesi" render="1" />
+    </chapter>
+
+    <chapter name="Prodigy" render="1">
+        <map name="de_prodigy" render="1" />
+    </chapter>
+
+    <chapter name="Storm" render="1">
+        <map name="de_storm" render="1" />
+    </chapter>
+
+    <chapter name="Survivor" render="1">
+        <map name="de_survivor" render="1" />
+    </chapter>
+
+    <chapter name="Torn" render="1">
+        <map name="de_torn" render="1" />
+    </chapter>
+
+    <chapter name="Train" render="1">
+        <map name="de_train" render="1" />
+    </chapter>
+
+    <chapter name="Vertigo" render="1">
+        <map name="de_vertigo" render="1" />
     </chapter>
 </mapconfig>
